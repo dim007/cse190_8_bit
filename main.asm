@@ -2,7 +2,7 @@ main
 	org 33000
 
 
-        ld ixh, 167     ; y position   
+        ld ixh, 167      ; y position   
         ld ixl, 50       ; x position
 
 	call getPixelAddr
@@ -94,15 +94,15 @@ MoveLeft
 
 ShiftLeft
      
-        ld a,(de) ;load first byte
-	ld (hl),a ;write to screen mem
-        inc de    ;get next byte 
-        inc hl    ;get adjecent 8x8 cell
-        ld a,(de) ;load adj cell
+        ld a,(de)         ;load first byte
+	ld (hl),a         ;write to screen mem
+        inc de            ;get next byte 
+        inc hl            ;get adjecent 8x8 cell
+        ld a,(de)         ;load adj cell
 
         ld (hl),a
-        inc de    ;get next byte
-        inc ixh   ;get next row byte address
+        inc de            ;get next byte
+        inc ixh           ;get next row byte address
         call getPixelAddr
 	djnz ShiftLeft
         ld ixh,167
@@ -112,16 +112,16 @@ leftPos
         dec ixl
         dec ixl
 
-        ld ixh,167                 ;get new x position
+        ld ixh,167        ;get new x position
         ret
 
 ClearSprite
         ld a, 0
         ld (hl),a
-        inc hl    ;get adjecent 8x8 cell
+        inc hl           ;get adjecent 8x8 cell
         ld (hl),a
-        inc de    ;get next byte
-        inc ixh   ;get next row byte address
+        inc de           ;get next byte
+        inc ixh          ;get next row byte address
         call getPixelAddr
 	djnz ClearSprite
         ld ixh ,167
@@ -138,7 +138,7 @@ gameover
 
 	ret; 
 
-getPixelAddr
+getPixelAddr            ;Source:http://www.animatez.co.uk/computers/zx-spectrum/screen-memory-layout/
 
         LD A,ixh        ; Calculate Y2,Y1,Y0
         AND %00000111   ; Mask out unwanted bits
