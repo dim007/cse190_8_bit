@@ -1,7 +1,6 @@
-main
 	org 33000
 
-
+main
         ld ixh, 167      ; y position   
         ld ixl, 50       ; x position
 
@@ -62,7 +61,12 @@ MainLoop
         push af      
         call nc, MoveLeft
         pop af
-        push ix
+        rra		  ;rotate right, skip "s" for now
+	rra		  ;rotate right for "d" key
+	push af
+	call nc, MoveRight
+	pop af
+	push ix
         jp MainLoop
         
 
@@ -91,7 +95,28 @@ MoveLeft
         halt
         ret
        
-
+MoveRight
+	call getPixelAddr
+	ld b,16
+	call ClearSprite
+	
+	call rightPos
+	call getPixelAddr
+	ld de,ash2
+	ld b,16
+	call ShiftRight
+	halt
+	
+			    ;load second frame
+	ld b,16
+	call ClearSprite
+	inc ixl
+	call getPixelAddr
+	ld de,ash1
+	ld b,16
+	call ShiftRight
+	halt
+	ret
 ShiftLeft
      
         ld a,(de)         ;load first byte
@@ -108,12 +133,32 @@ ShiftLeft
         ld ixh,167
         ret
         
+ShiftRight
+	ld a,(de)
+	ld (hl),a
+	inc de
+	inc hl
+	ld a,(de)
+	
+	ld (hl),a
+	inc de
+	inc ixh
+	call getPixelAddr
+	djnz ShiftRight
+	ld ixh,167
+	ret
 leftPos
         dec ixl
         dec ixl
 
         ld ixh,167        ;get new x position
         ret
+rightPos
+	inc ixl
+	inc ixl
+	
+	ld ixh,167
+	ret
 
 ClearSprite
         ld a, 0
