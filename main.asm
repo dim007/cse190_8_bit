@@ -102,7 +102,7 @@ MoveRight
 	
 	call rightPos
 	call getPixelAddr
-	ld de,ash2
+	ld de,ash2_r
 	ld b,16
 	call ShiftRight
 	halt
@@ -112,7 +112,7 @@ MoveRight
 	call ClearSprite
 	inc ixl
 	call getPixelAddr
-	ld de,ash1
+	ld de,ash1_r
 	ld b,16
 	call ShiftRight
 	halt
@@ -216,15 +216,25 @@ ash2
 	DEFB	 20,152, 16,144,  8,104,  7,232
 	DEFB	 31,152, 36,148, 19,228, 14, 24
 	DEFB	 56, 56, 56, 56
-
-
 ash1
         DEFB	 15,224, 31,240, 63,248,127,248
 	DEFB	127,252, 63,252, 21,252, 20,152
 	DEFB	 16, 16,  8,104,  7,200,  3, 40
 	DEFB	  3, 40,  4,240,  4, 32,  3,192
 	DEFB	 56, 56, 56, 56
-
+ash1_r
+	DEFB	  7,240, 15,248, 31,252, 31,254
+	DEFB	 63,254, 63,252, 63,168, 25, 40
+	DEFB	  8,  8, 22, 16, 19,224, 20,192
+	DEFB	 20,192, 15, 32,  4, 32,  3,192
+	DEFB	 56, 56, 56, 56
+ash2_r	
+	DEFB	  0,  0,  7,240, 15,248, 31,252
+	DEFB	 31,254, 63,254, 63,252, 63,168
+	DEFB	 25, 40,  9,  8, 22, 16, 23,224
+	DEFB	 25,248, 41, 36,200, 24,112
+	DEFB	 56, 56, 56, 56
+	
 platform
 
         DEFB	255,255,129,129,255,129,129,129
