@@ -5,7 +5,7 @@
 	ld (23693),a	;load colors to screen
 	call 3503	;clear screen
 	xor a
-	call 8859
+	call 8859	;set permanent boarder colors
 	
 title	ld de,press_start	;load string
 	ld bc,eostr-press_start	;load length of string
@@ -13,14 +13,13 @@ title	ld de,press_start	;load string
 	ld bc,32766		;23560 = last key pressed
 	in a,(c)
 	rra
-	rra
-	rra
-	rra
-	rra
 	call nc, main
 	jp title
 
-main	call 3503
+main	call 3503	 ;clear screen
+	ld a,56		 ;reset colors
+	ld (23693),a	 ;load screen colors
+	;normal main
         ld ixh, 167      ; y position   
         ld ixl, 50       ; x position
 
