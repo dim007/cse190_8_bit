@@ -16,9 +16,10 @@ title	ld de,press_start	;load string
 	call nc, main
 	jp title
 
-main	call 3503	 ;clear screen
+main	
 	ld a,56		 ;reset colors
 	ld (23693),a	 ;load screen colors
+	call 3503	 ;clear screen
 	;normal main
         ld ixh, 167      ; y position   
         ld ixl, 50       ; x position
