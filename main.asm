@@ -1,12 +1,33 @@
 	org 33000
+	ld a,2		;upper screen
+	call 5633	;open 2nd channel
+	ld a,71		;black screen white ink
+	ld (23693),a	;load colors to screen
+	call 3503	;clear screen
+	xor a
+	call 8859
+	
+title	ld de,press_start	;load string
+	ld bc,eostr-press_start	;load length of string
+	call 8252		;draw string
+	ld bc,32766		;23560 = last key pressed
+	in a,(c)
+	rra
+	rra
+	rra
+	rra
+	rra
+	call nc, main
+	jp title
 
-main
+main	call 3503
         ld ixh, 167      ; y position   
         ld ixl, 50       ; x position
 
 	call getPixelAddr
-        push ix          ; save position of sprite
-
+        ;push ix          ; save position of sprite
+	ld (32900),ix	 ;store player position to 32900
+	
         ld de,ash1       ; ref graphic data
         ld b, 16         ; draw 16 rows
 
@@ -26,8 +47,6 @@ DrawSprite
         ld iy,0          ;32 columns to draw
 
 DrawPlatforms
-
-      
         ld ixl, 0         ; x position
 
 ChangedX
@@ -54,7 +73,8 @@ DrawNextCell
 
 
 MainLoop
-        pop ix
+        ;pop ix
+	ld ix,(32900)	  ;load character
         ld bc, 65022      ;keyboard asdfg ports
         in a, (c)         ;what keys were pressed
         rra               ;was "a" pressed?
@@ -66,7 +86,8 @@ MainLoop
 	push af
 	call nc, MoveRight
 	pop af
-	push ix
+	;push ix
+	ld (32900),ix
         jp MainLoop
         
 
@@ -240,3 +261,7 @@ platform
         DEFB	255,255,129,129,255,129,129,129
 	DEFB	 56
 
+press_start
+	DEFB	22,16,12,"Press Space"	;At,16,12
+	defb 	13			;new line
+eostr equ $	
