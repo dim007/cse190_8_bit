@@ -12,44 +12,14 @@
 title	ld de,press_start	;load string
 	ld bc,eostr-press_start	;load length of string
 	call 8252		;draw string
-	call 3503		;clear screen
 	halt
+	call 3503		;clear screen
 	ld bc,32766		;32766 = B,N,M,SymbolShift,Space
 	in a,(c)		;load keys
 	rra			;rotate right once for space
 	call nc, menu		;if carry jump to main menu
 	jp title		;else reloop
-
-menu	call 3503
-	ld ixl,50		;xpos
-	ld ixh,30		;ypos
-	call getPixelAddr
-	ld de,ash1
-	ld b,16
-drawTitle
-        ld a,(de)        ;load first byte
-        ld (hl),a        ;write to screen mem
-        inc de           ;get next byte 
-        inc hl           ;get adjecent 8x8 cell
-        ld a,(de)        ;load adj cell
-        ld (hl),a
-        inc de           ;get next byte
-        inc ixh          ;get next row byte address
-        call getPixelAddr
-        djnz drawTitle
-
-	ld de,menu1_string
-	ld bc,eostr2-menu1_string
-	call 8252
-	ld de,menu2_string
-	ld bc,eostr3-menu2_string
-	call 8252
-	
-menulo	ld bc,32766	;check for space key press
-	in a,(c)
-	rra
-	call nc,main
-	jp menulo
+menu
 
 main	
 	ld a,56		 ;reset colors
@@ -351,15 +321,6 @@ platform
 	DEFB	 56
 
 press_start
-	DEFB	22,16,10,"Press Space"	;At,16,12
+	DEFB	22,16,12,"Press Space"	;At,16,12
 	defb 	13			;new line
-eostr equ $
-menu1_string
-	DEFB	22,16,12,"Start Game"	
-	DEFB	13
-eostr2 equ $
-menu2_string
-	DEFB	22,19,12,"Controls"
-	DEFB	13
-eostr3 equ $
-
+eostr equ $	
