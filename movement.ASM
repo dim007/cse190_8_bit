@@ -1,4 +1,5 @@
-Jump	call getPixelAddr
+Jump	ret                     ;TODO
+        call getPixelAddr
 	ld b,16
 	call ClearSprite
 	call jumpPos
@@ -25,36 +26,58 @@ ShiftUp
 
 MoveLeft
       
+        
+        ld iy,BKGRNDBUFF
         call getPixelAddr       ;get our hl coord
-        ld b,16
+        ld b,16 
         call ClearSprite
         
-        call leftPos            ;get new left position coords
-        call getPixelAddr       ;get screen address
-        ld de,ash2              ; ref graphic data
-        ld b, 16                ; draw 16 rows
+        call leftPos
+        call getPixelAddr
+        ld (SCRNADDR), hl
+        ld iy,BKGRNDBUFF
+        ld b,16
+        call SaveBackground
+
+        ld hl,(SCRNADDR)
+        ld ix,(playPos_x)
+     
+        ld de ,ash2
+        ld b,16
         call ShiftLeft
-        halt 
-       
-                                ;next frame of animation
+        halt
+   
+        ld iy, BKGRNDBUFF
+        ld hl,(SCRNADDR)
         ld b,16
         call ClearSprite
-	dec ixl
+       
+        dec ixl
+        ld iy, BKGRNDBUFF
         call getPixelAddr
-        ld de,ash1;
-        ld b,16;
-        call ShiftLeft
+        ld (SCRNADDR),hl
+        ld b,16
+        call SaveBackground
 
+        ld hl,(SCRNADDR)
+        ld a, ixl
+        ld (playPos_x),a
+        ld ix, (playPos_x)
+        ld de,ash1
+        ld b,16
+        call ShiftLeft
         halt
         ret
+       
 ShiftLeft
 
         ld a,(de)               ;load first byte
+        or (hl)
         ld (hl),a               ;write to screen mem
         inc de                  ;get next byte 
         inc hl                  ;get adjecent 8x8 cell
         ld a,(de)               ;load adj cell
-
+        or (hl)
         ld (hl),a
         inc de                  ;get next byte
         inc ixh                 ;get next row byte address
@@ -64,27 +87,47 @@ ShiftLeft
         ret
 
 MoveRight
-	call getPixelAddr
-	ld b,16
-	call ClearSprite
-	
-	call rightPos
-	call getPixelAddr
-	ld de,ash2_r
-	ld b,16
-	call ShiftRight
-	halt
-	
-			        ;load second frame
-	ld b,16
-	call ClearSprite
-	inc ixl
-	call getPixelAddr
-	ld de,ash1_r
-	ld b,16
-	call ShiftRight
-	halt
-	ret
+	ld iy,BKGRNDBUFF
+        call getPixelAddr       ;get our hl coord
+        ld b,16 
+        call ClearSprite
+        
+        call rightPos
+        call getPixelAddr
+        ld (SCRNADDR), hl
+        ld iy,BKGRNDBUFF
+        ld b,16
+        call SaveBackground
+
+        ld hl,(SCRNADDR)
+        ld ix,(playPos_x)
+     
+        ld de ,ash2_r
+        ld b,16
+        call ShiftLeft
+        halt
+   
+        ld iy, BKGRNDBUFF
+        ld hl,(SCRNADDR)
+        ld b,16
+        call ClearSprite
+       
+        inc ixl
+        ld iy, BKGRNDBUFF
+        call getPixelAddr
+        ld (SCRNADDR),hl
+        ld b,16
+        call SaveBackground
+
+        ld hl,(SCRNADDR)
+        ld a, ixl
+        ld (playPos_x),a
+        ld ix, (playPos_x)
+        ld de,ash1_r
+        ld b,16
+        call ShiftLeft
+        halt
+        ret
         
 ShiftRight
 	ld a,(de)
@@ -111,6 +154,9 @@ leftPos
         dec ixl
         dec ixl
 
+        ld a, ixl
+        ld (playPos_x), a
+      
 	ld a,(playPos_y)
         ld ixh,a                ;get new y position
         ret
@@ -118,7 +164,29 @@ rightPos
 	inc ixl
 	inc ixl
 	
+        ld a,ixl
+        ld (playPos_x),a
+
 	ld a,(playPos_y)
 	ld ixh,a
 	ret
+SaveBackground
+        call getPixelAddr
+        ld a,(hl)               ;get first byte
+        ld (iy), a              ;store byte in buffer
+        inc iyl                 ;addr of next buf address
+        inc l                   ;next byte of data
 
+        ld a,(hl)
+        ld (iy),a
+        inc iyl
+        inc ixh
+        djnz SaveBackground
+
+        ret
+
+BITPOS     DEFB 0
+SCRNADDR   DEFW 0
+BKGRNDBUFF EQU 64512
+LINECOUNT  DEFB 0
+SPTEMP     DEFW 0

@@ -1,14 +1,4 @@
-ClearSprite
-        ld a, 0
-        ld (hl),a
-        inc hl                  ;get adjecent 8x8 cell
-        ld (hl),a
-        inc de                  ;get next byte
-        inc ixh                 ;get next row byte address
-        call getPixelAddr
-	djnz ClearSprite
-        ld ixh ,167
-        ret
+
 getPixelAddr            ;Source:http://www.animatez.co.uk/computers/zx-spectrum/screen-memory-layout/
 
         LD A,ixh                ; Calculate Y2,Y1,Y0
@@ -37,8 +27,39 @@ getPixelAddr            ;Source:http://www.animatez.co.uk/computers/zx-spectrum/
         RET
 
 ;SCREEN 1 START
+DrawAsh
+        di                      ;disable interrupts
+       
+       
+        ld (SCRNADDR), hl
+        ld iy,BKGRNDBUFF
+        ld b,16                 ;16 rows to save
+
+STOREBACKGROUND
+        
+        call getPixelAddr
+        ld a,(hl)               ;get first byte
+        ld (iy), a              ;store byte in buffer
+        inc iyl                 ;addr of next buf address
+        inc l                   ;next byte of data
+
+        ld a,(hl)
+        ld (iy),a
+        inc iyl
+        inc ixh
+        djnz STOREBACKGROUND
+
+       
+        ld hl,(SCRNADDR)
+        ld a, (playPos_y)       ;load init y player position
+	ld ixh,a
+        ld a, (playPos_x)       ; x position
+	ld ixl,a
+        ld b, 16
+        ld de, ash1
+
 DrawSprite
-     
+        
         ld a,(de)               ;load first byte
 	ld (hl),a               ;write to screen mem
         inc de                  ;get next byte 
@@ -49,13 +70,37 @@ DrawSprite
         inc ixh                 ;get next row byte address
         call getPixelAddr
 	djnz DrawSprite
-        ret
+        ei
+        ret        
+        
+
 wait
         ld bc,$1fff
 	dec bc
 	ld a,b
 	or c
 	jr nz, wait
+        ret
+
+ClearSprite
+        
+        ld a,(iy)
+        ld (hl),a
+        inc iyl                 ;get adjecent 8x8 cell
+        inc l
+        ld a,(iy)
+        ld (hl),a
+        inc iyl                ;get next byte
+        inc ixh                 ;get next row byte address
+        call getPixelAddr
+	djnz ClearSprite
+        ld ixh ,167
+        ret
+
+oldPlayPos_x:
+        DEFB 0
+oldPlayPos_y:
+        DEFB 0
 playPos_x:
 	DEFB 50
 playPos_y:

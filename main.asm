@@ -1,7 +1,7 @@
 	
 
 
-        org 33000
+                org 33000
 	di
 
 title	ld hl, 16384            ;clear screen
@@ -15,7 +15,7 @@ title	ld hl, 16384            ;clear screen
                                 ;move address to de reg
         ld d, h
         ld e, l           
-        ld hl, NEW01            ;title reference
+        ld hl, TITLE           ;title reference
 
 lineloop 
         ld a, b
@@ -51,7 +51,7 @@ main
 	ld de,ash1              ; ref graphic data
         ld b, 16                ; draw 16 rows
 
-        call DrawSprite
+        call DrawAsh
         ld iy,0                 ;32 columns to draw
 
 DrawPlatforms
