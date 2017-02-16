@@ -1,29 +1,39 @@
-Jump	ret                     ;TODO
-        call getPixelAddr
-	ld b,16
-	call ClearSprite
-	call jumpPos
-	call getPixelAddr
-	ld de,ash2
-	ld b,16
-	call ShiftUp
-	halt
-ShiftUp
-	ld a,(de)               ;load first byte
-        ld (hl),a               ;write to screen mem
-        inc de                  ;get next byte 
-        inc hl                  ;get adjecent 8x8 cell
-        
-	ld a,(de)               ;load adj cell
-        ld (hl),a
-        inc de                  ;get next byte
-        inc ixh                 ;get next row byte address
-        call getPixelAddr
-        djnz ShiftUp
+MoveLeft
+        dec ixl
+        dec ixl
+        dec ixl
+        ld a, ixl
+        ld (playPos_x), a
         ld a,(playPos_y)
-	ld ixh,a
-	ret
+        ld ixh,a                ;get new y position
+        ;update facing
+        xor a
+        ld (FACERIGHT),a
+        ld a,1
+        ld (ISMOVING),a
+        ret
+MoveRight
+        inc ixl
+        inc ixl
+        inc ixl
+        ld a,ixl
+        ld (playPos_x),a
+        ld a,(playPos_y)
+        ld ixh,a
+        ld a,1
+        ld (FACERIGHT),a
+        ld (ISMOVING),a
+        ret
+Jump	                     
+        ld a,(playPos_y)
+	dec a
+	dec a
+	dec a
+	ld (playPos_y),a
+	ld a,1
+	ld (ISJUMP),a
 
+	ret
 clearMe
         ld iy,BKGRNDBUFF
         call getPixelAddr       ;get our hl coord
@@ -98,41 +108,9 @@ Shift
         inc ixh                 ;get next row byte address
         call getPixelAddr
         djnz Shift
-        ld ixh,167
+	ld a,(playPos_y)
+        ld ixh,a
         ret     
-jumpPos
-	dec ixh
-	dec ixh
-	dec ixh	
-	ld a,ixh
-	ld (playPos_y),a
-	ret
-MoveLeft
-        dec ixl
-        dec ixl
-	dec ixl
-        ld a, ixl
-        ld (playPos_x), a
-	ld a,(playPos_y)
-        ld ixh,a                ;get new y position
-	;update facing
-	xor a
-	ld (FACERIGHT),a
-	ld a,1
-	ld (ISMOVING),a
-        ret
-MoveRight
-	inc ixl
-	inc ixl
-	inc ixl	
-        ld a,ixl
-        ld (playPos_x),a
-	ld a,(playPos_y)
-	ld ixh,a
-	ld a,1
-	ld (FACERIGHT),a
-	ld (ISMOVING),a
-	ret
 SaveBackground
         call getPixelAddr
         ld a,(hl)               ;get first byte
@@ -147,6 +125,7 @@ SaveBackground
         djnz SaveBackground
 
         ret
+ISJUMP	   DEFB 0
 ISMOVING   DEFB 0
 FACERIGHT  DEFB 1
 BITPOS     DEFB 0

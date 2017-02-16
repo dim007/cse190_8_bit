@@ -94,7 +94,8 @@ ClearSprite
         inc ixh                 ;get next row byte address
         call getPixelAddr
 	djnz ClearSprite
-        ld ixh ,167
+	ld a,(playPos_y)
+        ld ixh,a
         ret
 
 oldPlayPos_x:
