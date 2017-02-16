@@ -110,15 +110,16 @@ MainLoop
 	ld a,ixl
 	ld (playPos_x),a
 	jp MainLoop
+clearMe	
         
 gameover
 
 	ret; 
 
-INCLUDE movement.ASM
-INCLUDE render.ASM       
-INCLUDE ash.ASM
-INCLUDE title.ASM
+INCLUDE movement.asm
+INCLUDE render.asm     
+INCLUDE ash.asm
+INCLUDE title.asm
 
         	
 platform
