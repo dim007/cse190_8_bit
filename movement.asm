@@ -24,16 +24,14 @@ ShiftUp
 	ld ixh,a
 	ret
 
-MoveLeft
-      
-        
+clearMe
         ld iy,BKGRNDBUFF
         call getPixelAddr       ;get our hl coord
         ld b,16 
         call ClearSprite
-        
-        call leftPos
-        call getPixelAddr
+        ret
+drawMe        
+	call getPixelAddr
         ld (SCRNADDR), hl
         ld iy,BKGRNDBUFF
         ld b,16
@@ -41,18 +39,30 @@ MoveLeft
 
         ld hl,(SCRNADDR)
         ld ix,(playPos_x)
-     
-        ld de ,ash2
+
+    	;Draw depending on which way facing
+        ld a,(FACERIGHT)
+	cp 1
+	jp z,right1
+	ld de,ash1
+	jp skip1
+right1	ld de,ash1_r
+skip1
         ld b,16
-        call ShiftLeft
+        call Shift
         halt
-   
-        ld iy, BKGRNDBUFF
+	
+	;if not moving dont draw 2nd animation
+	ld a,(ISMOVING)
+	cp 1
+	jp z,cont   
+	ret
+
+cont    ld iy, BKGRNDBUFF
         ld hl,(SCRNADDR)
         ld b,16
         call ClearSprite
        
-        dec ixl
         ld iy, BKGRNDBUFF
         call getPixelAddr
         ld (SCRNADDR),hl
@@ -63,14 +73,19 @@ MoveLeft
         ld a, ixl
         ld (playPos_x),a
         ld ix, (playPos_x)
-        ld de,ash1
+        ;decide which way to face
+	ld a,(FACERIGHT)
+	cp 1
+	jp z,right2
+	ld de,ash2
+	jp skip2
+right2	ld de,ash2_r
+skip2	
         ld b,16
-        call ShiftLeft
+        call Shift
         halt
         ret
-       
-ShiftLeft
-
+Shift
         ld a,(de)               ;load first byte
         or (hl)
         ld (hl),a               ;write to screen mem
@@ -82,67 +97,9 @@ ShiftLeft
         inc de                  ;get next byte
         inc ixh                 ;get next row byte address
         call getPixelAddr
-        djnz ShiftLeft
+        djnz Shift
         ld ixh,167
-        ret
-
-MoveRight
-	ld iy,BKGRNDBUFF
-        call getPixelAddr       ;get our hl coord
-        ld b,16 
-        call ClearSprite
-        
-        call rightPos
-        call getPixelAddr
-        ld (SCRNADDR), hl
-        ld iy,BKGRNDBUFF
-        ld b,16
-        call SaveBackground
-
-        ld hl,(SCRNADDR)
-        ld ix,(playPos_x)
-     
-        ld de ,ash2_r
-        ld b,16
-        call ShiftLeft
-        halt
-   
-        ld iy, BKGRNDBUFF
-        ld hl,(SCRNADDR)
-        ld b,16
-        call ClearSprite
-       
-        inc ixl
-        ld iy, BKGRNDBUFF
-        call getPixelAddr
-        ld (SCRNADDR),hl
-        ld b,16
-        call SaveBackground
-
-        ld hl,(SCRNADDR)
-        ld a, ixl
-        ld (playPos_x),a
-        ld ix, (playPos_x)
-        ld de,ash1_r
-        ld b,16
-        call ShiftLeft
-        halt
-        ret
-        
-ShiftRight
-	ld a,(de)
-	ld (hl),a
-	inc de
-	inc hl
-	ld a,(de)
-	
-	ld (hl),a
-	inc de
-	inc ixh
-	call getPixelAddr
-	djnz ShiftRight
-	ld ixh,167
-	ret
+        ret     
 jumpPos
 	dec ixh
 	dec ixh
@@ -150,25 +107,31 @@ jumpPos
 	ld a,ixh
 	ld (playPos_y),a
 	ret
-leftPos
+MoveLeft
         dec ixl
         dec ixl
-
+	dec ixl
         ld a, ixl
         ld (playPos_x), a
-      
 	ld a,(playPos_y)
         ld ixh,a                ;get new y position
+	;update facing
+	xor a
+	ld (FACERIGHT),a
+	ld a,1
+	ld (ISMOVING),a
         ret
-rightPos
+MoveRight
 	inc ixl
 	inc ixl
-	
+	inc ixl	
         ld a,ixl
         ld (playPos_x),a
-
 	ld a,(playPos_y)
 	ld ixh,a
+	ld a,1
+	ld (FACERIGHT),a
+	ld (ISMOVING),a
 	ret
 SaveBackground
         call getPixelAddr
@@ -184,7 +147,8 @@ SaveBackground
         djnz SaveBackground
 
         ret
-
+ISMOVING   DEFB 0
+FACERIGHT  DEFB 1
 BITPOS     DEFB 0
 SCRNADDR   DEFW 0
 BKGRNDBUFF EQU 64512

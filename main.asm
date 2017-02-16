@@ -85,6 +85,7 @@ MainLoop
 	ld ixh,a
 	ld a,(playPos_x)
 	ld ixl,a
+	call clearMe
 	;check for jump movement
         ld bc,32766             ;keyboard b,n,m,shift,space
         in a,(c)
@@ -96,21 +97,22 @@ MainLoop
         in a, (c)               ;what keys were pressed
         rra                     ;was "a" pressed?
         push af      
-        call nc, MoveLeft
+        call nc,MoveLeft
         pop af
         rra		        ;rotate right, skip "s" for now
 	rra		        ;rotate right for "d" key
 	push af
-	call nc, MoveRight
+	call nc,MoveRight
 	pop af
-
+	call drawMe
 	;store player position
 	ld a,ixh
 	ld (playPos_y),a
 	ld a,ixl
 	ld (playPos_x),a
+	xor a	; clear a
+	ld (ISMOVING),a	;stop movement animation
 	jp MainLoop
-clearMe	
         
 gameover
 
