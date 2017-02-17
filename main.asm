@@ -82,10 +82,9 @@ DrawNextCell
 MainLoop
         ;load player position
 	ld a,(playPos_y)
-	ld ixh,a
+	ld (OLDy),a
 	ld a,(playPos_x)
-	ld ixl,a
-	call clearMe
+	ld (OLDx),a
 
 	call Gravity	
 	;check for jump movement
@@ -106,6 +105,7 @@ MainLoop
 	push af
 	call nc,MoveRight
 	pop af
+	call clearMe
 	call drawMe
 	;store player position
 	ld a,ixh
@@ -125,7 +125,6 @@ INCLUDE render.asm
 INCLUDE ash.asm
 INCLUDE title.asm
 
-        	
 platform
 
         DEFB	255,255,129,129,255,129,129,129

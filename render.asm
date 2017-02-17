@@ -1,6 +1,6 @@
 
 getPixelAddr            ;Source:http://www.animatez.co.uk/computers/zx-spectrum/screen-memory-layout/
-
+	
         LD A,ixh                ; Calculate Y2,Y1,Y0
         AND %00000111           ; Mask out unwanted bits
         OR %01000000            ; Set base address of screen

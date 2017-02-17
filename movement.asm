@@ -13,7 +13,7 @@ MoveLeft
         ld (ISMOVING),a
         ret
 MoveRight
-        inc ixl
+        
         inc ixl
         inc ixl
         ld a,ixl
@@ -40,6 +40,7 @@ Jump
 	dec a
 	dec a
 	ld (playPos_y),a
+	ld ixh,a
 	ld a,(JUMPCOUNT)
 	inc a
 	ld (JUMPCOUNT),a
@@ -61,19 +62,29 @@ Gravity
 	cp 167
 	jp z,stopFll
 	ld (playPos_y),a
+	ld ixh,a
 	ret
 stopFll	ld (playPos_y),a
+	ld ixh,a
 	xor a
 	ld (JUMPCOUNT),a
 	ld (ISJUMP),a
 	ret
 clearMe
         ld iy,BKGRNDBUFF
+	ld a,(OLDx)
+	ld ixl,a
+	ld a,(OLDy)
+	ld ixh,a
         call getPixelAddr       ;get our hl coord
         ld b,16 
         call ClearSprite
         ret
 drawMe        
+	ld a,(playPos_x)
+        ld ixl,a
+        ld a,(playPos_y)
+        ld ixh,a
 	call getPixelAddr
         ld (SCRNADDR), hl
         ld iy,BKGRNDBUFF
@@ -83,7 +94,7 @@ drawMe
         ld hl,(SCRNADDR)
         ld ix,(playPos_x)
 
-	;Draw Single jump if jumping
+	;Draw Single sprite jump if jumping
 	ld a,(ISJUMP)
 	cp 1
 	jp nz,skipJmp
@@ -112,7 +123,7 @@ skip1
 	cp 1
 	jp z,cont   
 	ret
-
+	
 cont    ld iy, BKGRNDBUFF
         ld hl,(SCRNADDR)
         ld b,16
@@ -203,6 +214,8 @@ ISJUMP	   DEFB 0
 JUMPCOUNT  DEFB 0
 ISMOVING   DEFB 0
 FACERIGHT  DEFB 1
+OLDx	DEFB 0
+OLDy	DEFB 0
 BITPOS     DEFB 0
 SCRNADDR   DEFW 0
 BKGRNDBUFF EQU 64512
