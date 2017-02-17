@@ -86,12 +86,14 @@ MainLoop
 	ld a,(playPos_x)
 	ld ixl,a
 	call clearMe
+
+	call Gravity	
 	;check for jump movement
         ld bc,32766             ;keyboard b,n,m,shift,space
         in a,(c)
         rra
         call nc,Jump
-
+	
 	;check for L/R movement
 	ld bc, 65022            ;keyboard asdfg ports
         in a, (c)               ;what keys were pressed

@@ -24,15 +24,48 @@ MoveRight
         ld (FACERIGHT),a
         ld (ISMOVING),a
         ret
-Jump	                     
-        ld a,(playPos_y)
+Jump	                    
+        ld a,(JUMPCOUNT)
+	cp 10
+	jp z,JumpEnd
+	ld a,1
+	ld (ISJUMP),a
+	ld a,(playPos_y)
+	dec a
+	dec a
+	dec a
+	dec a
+	dec a
 	dec a
 	dec a
 	dec a
 	ld (playPos_y),a
-	ld a,1
+	ld a,(JUMPCOUNT)
+	inc a
+	ld (JUMPCOUNT),a
+JumpEnd	ret
+Gravity
+	ld a,(playPos_y)
+	cp 167
+	jp z,stopFll
+	inc a
+	cp 167
+	jp z,stopFll
+	inc a
+	cp 167
+	jp z,stopFll
+	inc a
+	cp 167
+	jp z,stopFll
+	inc a
+	cp 167
+	jp z,stopFll
+	ld (playPos_y),a
+	ret
+stopFll	ld (playPos_y),a
+	xor a
+	ld (JUMPCOUNT),a
 	ld (ISJUMP),a
-
 	ret
 clearMe
         ld iy,BKGRNDBUFF
@@ -50,8 +83,20 @@ drawMe
         ld hl,(SCRNADDR)
         ld ix,(playPos_x)
 
+	;Draw Single jump if jumping
+	ld a,(ISJUMP)
+	cp 1
+	jp nz,skipJmp
+	ld a,(FACERIGHT)
+	cp 1
+	jp z,right0
+	ld de,ashJump
+	jp skip3	;skip to very end
+right0	ld de,ashJump_r
+	jp skip3
+
     	;Draw depending on which way facing
-        ld a,(FACERIGHT)
+skipJmp ld a,(FACERIGHT)
 	cp 1
 	jp z,right1
 	ld de,ash1
@@ -94,6 +139,35 @@ skip2
         ld b,16
         call Shift
         halt
+	
+	;Part 3
+	ld iy, BKGRNDBUFF
+        ld hl,(SCRNADDR)
+        ld b,16
+        call ClearSprite
+
+        ld iy, BKGRNDBUFF
+        call getPixelAddr
+        ld (SCRNADDR),hl
+        ld b,16
+        call SaveBackground
+
+	ld hl,(SCRNADDR)
+        ld a, ixl
+        ld (playPos_x),a
+        ld ix, (playPos_x)
+        ;decide which way to face
+        ld a,(FACERIGHT)
+        cp 1
+        jp z,right3
+        ld de,ash3
+        jp skip3
+right3  ld de,ash3_r
+skip3
+        ld b,16
+        call Shift
+        halt
+
         ret
 Shift
         ld a,(de)               ;load first byte
@@ -126,6 +200,7 @@ SaveBackground
 
         ret
 ISJUMP	   DEFB 0
+JUMPCOUNT  DEFB 0
 ISMOVING   DEFB 0
 FACERIGHT  DEFB 1
 BITPOS     DEFB 0
