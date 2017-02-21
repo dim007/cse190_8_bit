@@ -26,6 +26,44 @@ getPixelAddr            ;Source:http://www.animatez.co.uk/computers/zx-spectrum/
         LD L,A                  ; Store in L
         RET
 
+DrawArrow
+        di
+        push ix
+        ld ix, (oldArrowx)
+        ld b, 8
+        call getPixelAddr
+        call BlackOut
+        pop ix
+        ld a, ixl
+        ld (oldArrowx),a
+        ld a, ixh
+        ld (oldArrowy),a
+        call getPixelAddr
+        ld b,8
+        ld de, arrow
+
+ArrowLoop
+        ld a,(de)               ;load first byte
+	ld (hl),a               ;write to screen mem
+        inc de                  ;get next byte 
+        inc ixh                 ;get next row byte address
+        call getPixelAddr
+	djnz ArrowLoop
+       
+        ei
+        ret        
+
+       
+BlackOut
+        ld a, 0
+        ld (hl),a
+        inc hl                  ;get adjecent 8x8 cell
+        inc ixh                 ;get next row byte address
+        call getPixelAddr
+	djnz BlackOut
+        ld ixh ,113
+        ret
+        
 ;SCREEN 1 START
 DrawAsh
         di                      ;disable interrupts
@@ -96,13 +134,15 @@ ClearSprite
 	djnz ClearSprite
         ld ixh ,167
         ret
-
+arrow:
+	DEFB	 24, 24, 24, 24,255,126, 60, 24
+	DEFB	 71
 oldPlayPos_x:
         DEFB 0
 oldPlayPos_y:
         DEFB 0
 playPos_x:
-	DEFB 50
+	DEFB 0
 playPos_y:
 	DEFB 167
 curPos_x:

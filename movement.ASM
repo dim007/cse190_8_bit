@@ -26,7 +26,12 @@ ShiftUp
 
 MoveLeft
       
-        
+        push ix
+        ld a, ixl
+        cp 240
+        jp z, Collision
+        pop ix
+
         ld iy,BKGRNDBUFF
         call getPixelAddr       ;get our hl coord
         ld b,16 
@@ -51,7 +56,7 @@ MoveLeft
         ld hl,(SCRNADDR)
         ld b,16
         call ClearSprite
-       
+       d
         dec ixl
         ld iy, BKGRNDBUFF
         call getPixelAddr
@@ -87,6 +92,12 @@ ShiftLeft
         ret
 
 MoveRight
+        push ix
+        ld a, ixl
+        cp 240
+        jp z, Collision
+        pop ix
+
 	ld iy,BKGRNDBUFF
         call getPixelAddr       ;get our hl coord
         ld b,16 
@@ -143,6 +154,9 @@ ShiftRight
 	djnz ShiftRight
 	ld ixh,167
 	ret
+Collision
+        pop ix
+        ret
 jumpPos
 	dec ixh
 	dec ixh

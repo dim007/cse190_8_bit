@@ -30,7 +30,7 @@ lineloop
         ld e, l  
         pop hl                
         djnz lineloop
-        
+       	 
        
         ld de, 22528            ;set attribute color
         ld bc, 768
@@ -40,7 +40,13 @@ lineloop
         ei 
 
 main	
-	
+	ld ix,(firArrow)
+        ld a, ixl
+        ld (oldArrowx),a
+        ld a, ixh
+        ld (oldArrowy),a
+
+        call DrawArrow
 	;normal main
         ld a, (playPos_y)       ;load init y player position
 	ld ixh,a
@@ -80,6 +86,7 @@ DrawNextCell
 
 
 MainLoop
+       
         ;load player position
 	ld a,(playPos_y)
 	ld ixh,a
@@ -105,11 +112,58 @@ MainLoop
 	pop af
 
 	;store player position
+        
 	ld a,ixh
 	ld (playPos_y),a
 	ld a,ixl
+        push ix
+        call LevelSelect
+        pop ix
+        ld a,ixl
 	ld (playPos_x),a
 	jp MainLoop
+
+LevelSelect:
+        
+        cp 0
+        jr z,ARROW1
+
+        ld a,ixl
+        cp 69
+        jr z,ARROW2
+       
+  
+        ld a,ixl
+        cp 132
+        jr z,ARROW3
+   
+        ld a,ixl
+        cp 192
+        jr z,ARROW4
+       
+        ret
+
+ARROW1:
+        ld ix,(firArrow)
+        call DrawArrow
+        ret       
+        
+ARROW2:
+        ld ix,(secArrow)
+        call DrawArrow
+   
+        ret
+ARROW3: 
+        ld ix,(thrdArrow)
+        call DrawArrow
+       
+        ret
+ARROW4:
+        ld ix,(frthArrow)
+        call DrawArrow
+       
+        ret
+
         
 gameover
 
@@ -126,16 +180,4 @@ platform
         DEFB	255,255,129,129,255,129,129,129
 	DEFB	 56
 
-press_start
-	DEFB	22,16,10,"Press Space"	;At,16,12
-	defb 	13			;new line
-eostr equ $
-menu1_string
-	DEFB	22,16,12,"Start Game"	
-	DEFB	13
-eostr2 equ $
-menu2_string
-	DEFB	22,19,12,"Controls"
-	DEFB	13
-eostr3 equ $
 
