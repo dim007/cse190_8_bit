@@ -315,9 +315,9 @@ firArrow:  DEFB 32
            DEFB 113
 secArrow:  DEFB 88
            DEFB 113
-thrdArrow: DEFB 151
+thrdArrow: DEFB 153d
            DEFB 113
-frthArrow: DEFB 211
+frthArrow: DEFB 214
            DEFB 113
 oldArrowx: DEFB 0
 oldArrowy: DEFB 0

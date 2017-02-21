@@ -1,7 +1,7 @@
 MoveLeft
         push ix
         ld a, ixl
-        cp 240
+        cp 0
         jp z, Collision
         pop ix
 
@@ -20,6 +20,13 @@ MoveLeft
         ret
 MoveRight
         
+        push ix
+        ld a, ixl
+        cp 240
+        jp z, Collision
+        pop ix
+
+        inc ixl
         inc ixl
         inc ixl
         ld a,ixl
@@ -92,6 +99,7 @@ drawMe
         ld ixl,a
         ld a,(playPos_y)
         ld ixh,a
+
 	call getPixelAddr
         ld (SCRNADDR), hl
         ld iy,BKGRNDBUFF
@@ -188,8 +196,6 @@ skip3
         ret
 Collision
         pop ix
-        ret
-
         ret
 Shift
         ld a,(de)               ;load first byte

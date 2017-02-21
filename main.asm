@@ -1,7 +1,7 @@
 	
 
 
-                org 33000
+        org 33000
 	di
 
 title	ld hl, 16384            ;clear screen
@@ -39,7 +39,9 @@ lineloop
         call 8859               ;set border color
         ei 
 
+        
 main	
+        call SetInterrupt
 	ld ix,(firArrow)
         ld a, ixl
         ld (oldArrowx),a
@@ -114,8 +116,8 @@ MainLoop
 	pop af
 	call clearMe
 	call drawMe
-	;store player position
         
+	;store player position
 	ld a,ixh
 	ld (playPos_y),a
 	ld a,ixl
@@ -126,45 +128,111 @@ MainLoop
 	ld (playPos_x),a
 	xor a	; clear a
 	ld (ISMOVING),a	;stop movement animation
+
+
+        ;check for level selected
+        ld bc, 49150
+        in a, (c)
+        rra                      ;was "enter" pressed
+        call nc, EnterLevel
+      
 	jp MainLoop
 
-LevelSelect:
-        
-        cp 0
-        jr z,ARROW1
-
-        ld a,ixl
-        cp 69
-        jr z,ARROW2
-       
-  
-        ld a,ixl
-        cp 132
-        jr z,ARROW3
-   
-        ld a,ixl
-        cp 192
-        jr z,ARROW4
-       
+SetInterrupt
+  	di
+        ld hl, Interrupt
+        ld ix, &FFF0
+        ld (ix+04h), &c3
+        ld (ix+05h),l
+        ld (ix+06h),h
+        ld (ix+0Fh),&18
+        ld a, &39
+        ld i,a
+        im 2
+        ei
         ret
 
+Interrupt
+       di
+       push af             ; preserve registers.
+       push bc
+       push hl
+       push de
+       push ix
+       rst 56
+                           ; ROM routine, read keys and update clock.
+       pop ix              ; ADD OUR OWN INTERRUPT ROUTINE <----------------------
+       pop de
+       pop hl
+       pop bc
+       pop af
+       ei   
+       reti
+        
+       
+LevelSelect:
+        
+        cp 33
+        jp z,ARROW1
+
+        ld a,ixl
+        cp 90
+        jp z,ARROW2
+       
+        ld a,ixl
+        cp 156
+        jp z,ARROW3
+   
+        ld a,ixl
+        cp 219
+        jp z,ARROW4
+       
+        ret
+EnterLevel
+
+        ld a,(level_selected)
+        cp 1
+        jp z, LEVEL1
+        
+        add a, 1
+        cp 2
+        jp z, LEVEL1
+    
+        add a, 2
+        cp 3
+        jp z, LEVEL1
+
+        add a, 3
+        cp 4
+        jp z, LEVEL1
+
+INCLUDE level1.asm
+        
 ARROW1:
         ld ix,(firArrow)
+        ld a, 1
+        ld (level_selected), a
         call DrawArrow
         ret       
         
 ARROW2:
         ld ix,(secArrow)
+        ld a, 2
+        ld (level_selected), a
         call DrawArrow
    
         ret
 ARROW3: 
         ld ix,(thrdArrow)
+        ld a, 3
+        ld (level_selected), a
         call DrawArrow
        
         ret
 ARROW4:
         ld ix,(frthArrow)
+        ld a, 4
+        ld (level_selected), a
         call DrawArrow
        
         ret
@@ -178,10 +246,12 @@ INCLUDE movement.asm
 INCLUDE render.asm     
 INCLUDE ash.asm
 INCLUDE title.asm
+INCLUDE level1_scene1.ASM  
+
 
 platform
 
         DEFB	255,255,129,129,255,129,129,129
 	DEFB	 56
 
-
+level_selected DEFB 0
