@@ -89,28 +89,31 @@ MainLoop
        
         ;load player position
 	ld a,(playPos_y)
-	ld ixh,a
+	ld (OLDy),a
 	ld a,(playPos_x)
-	ld ixl,a
+	ld (OLDx),a
+
+	call Gravity	
 	;check for jump movement
         ld bc,32766             ;keyboard b,n,m,shift,space
         in a,(c)
         rra
         call nc,Jump
-
+	
 	;check for L/R movement
 	ld bc, 65022            ;keyboard asdfg ports
         in a, (c)               ;what keys were pressed
         rra                     ;was "a" pressed?
         push af      
-        call nc, MoveLeft
+        call nc,MoveLeft
         pop af
         rra		        ;rotate right, skip "s" for now
 	rra		        ;rotate right for "d" key
 	push af
-	call nc, MoveRight
+	call nc,MoveRight
 	pop af
-
+	call clearMe
+	call drawMe
 	;store player position
         
 	ld a,ixh
@@ -121,6 +124,8 @@ MainLoop
         pop ix
         ld a,ixl
 	ld (playPos_x),a
+	xor a	; clear a
+	ld (ISMOVING),a	;stop movement animation
 	jp MainLoop
 
 LevelSelect:
@@ -169,12 +174,11 @@ gameover
 
 	ret; 
 
-INCLUDE movement.ASM
-INCLUDE render.ASM       
-INCLUDE ash.ASM
-INCLUDE title.ASM
+INCLUDE movement.asm
+INCLUDE render.asm     
+INCLUDE ash.asm
+INCLUDE title.asm
 
-        	
 platform
 
         DEFB	255,255,129,129,255,129,129,129
