@@ -100,7 +100,7 @@ DrawSprite
         
         ld a,(de)               ;load first byte
 	ld (hl),a               ;write to screen mem
-        inc de                  ;get next byte 
+        inc de                  ;get neddxt byte 
         inc hl                  ;get adjecent 8x8 cell
         ld a,(de)               ;load adj cell
         ld (hl),a

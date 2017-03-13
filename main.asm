@@ -167,7 +167,7 @@ Interrupt
        pop bc
        pop af
        ei   
-       reti
+       ret
         
        
 LevelSelect:
@@ -189,10 +189,15 @@ LevelSelect:
        
         ret
 EnterLevel
-
+        ld a,0
+        ld (playPos_x), a
+        ld a,167
+        ld (playPos_y), a
+        ld a,1
+        ld (FACERIGHT),a
         ld a,(level_selected)
         cp 1
-        jp z, LEVEL1
+        jp z, LEVEL2 ;;CHANGE 
         
         cp 2
         jp z, LEVEL2
@@ -203,7 +208,7 @@ EnterLevel
         cp 4
         jp z, LEVEL2
 
-INCLUDE level1.asm
+;INCLUDE level1.asm ;;CHANGE
 INCLUDE level2.asm
 ARROW1:
         ld ix,(firArrow)
@@ -243,8 +248,9 @@ INCLUDE movement.asm
 INCLUDE render.asm     
 INCLUDE ash.asm
 INCLUDE title.asm
-INCLUDE level1_scene1.ASM  
 INCLUDE level2_scene1.ASM
+;INCLUDE lvls.asm ;CHANGE
+
 
 platform
 

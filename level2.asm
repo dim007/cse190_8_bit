@@ -18,7 +18,7 @@ scene2:
         ld hl,  level2_scene1        ;title reference
 	xor a	
 	ld (numstate2),a		;reset state
-scene2loop 
+scene2loop2 
 
         ld a, b
         ld bc, 32               ;copy graphic data to display file
@@ -31,7 +31,7 @@ scene2loop
         ld d, h
         ld e, l  
         pop hl                
-        djnz scene2loop
+        djnz scene2loop2
        	 
        
         ld de,22528            ;set attribute color
