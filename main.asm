@@ -172,7 +172,7 @@ Interrupt
        
 LevelSelect:
         
-        cp 33
+        cp 34 	;;33
         jp z,ARROW1
 
         ld a,ixl
@@ -184,7 +184,7 @@ LevelSelect:
         jp z,ARROW3
    
         ld a,ixl
-        cp 219
+        cp 206  ;;219
         jp z,ARROW4
        
         ret
@@ -194,20 +194,17 @@ EnterLevel
         cp 1
         jp z, LEVEL1
         
-        add a, 1
         cp 2
-        jp z, LEVEL1
+        jp z, LEVEL2
     
-        add a, 2
         cp 3
-        jp z, LEVEL1
+        jp z, LEVEL2
 
-        add a, 3
         cp 4
-        jp z, LEVEL1
+        jp z, LEVEL2
 
 INCLUDE level1.asm
-        
+INCLUDE level2.asm
 ARROW1:
         ld ix,(firArrow)
         ld a, 1
@@ -247,7 +244,7 @@ INCLUDE render.asm
 INCLUDE ash.asm
 INCLUDE title.asm
 INCLUDE level1_scene1.ASM  
-
+INCLUDE level2_scene1.ASM
 
 platform
 
