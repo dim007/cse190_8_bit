@@ -129,15 +129,18 @@ skipJmp ld a,(FACERIGHT)
 	jp skip1
 right1	ld de,ash1_r
 skip1
-        ld b,16
-        call Shift
-        halt
-	
-	;if not moving dont draw 2nd animation
+        ;if not moving dont draw 2nd animation
 	ld a,(ISMOVING)
 	cp 1
 	jp z,cont   
+	
+
+        ld b,16
+        call Shift
+        halt
+
 	ret
+	
 	
 cont    ld iy, BKGRNDBUFF
         ld hl,(SCRNADDR)
@@ -198,21 +201,68 @@ Collision
         pop ix
         ret
 Shift
+
+        ld a ,(INFOREGROUND)
+        cp 1
+        jp z, MaskShift
+      
+   
         ld a,(de)               ;load first byte
         or (hl)
         ld (hl),a               ;write to screen mem
+        inc de
         inc de                  ;get next byte 
         inc hl                  ;get adjecent 8x8 cell
         ld a,(de)               ;load adj cell
         or (hl)
         ld (hl),a
         inc de                  ;get next byte
+        inc de
         inc ixh                 ;get next row byte address
         call getPixelAddr
         djnz Shift
 	ld a,(playPos_y)
         ld ixh,a
-        ret     
+        ret
+
+MaskShift
+      
+
+        push de
+        inc de
+        ld a,(de)               ;load first mask byte
+        and (hl)
+        ld (hl),a               ;mask in
+        pop de
+        ld a,(de)               ;load first graph byte
+        or (hl)
+        ld (hl),a               ;draw char
+        inc hl
+        inc de                  ;get next graph byte 
+        inc de
+        push de
+        inc de
+        ld a,(de)               ;load second mask byte
+        and (hl)
+        ld (hl),a               ;mask in
+        pop de
+        ld a,(de)               ;load second graph byte
+        or (hl)
+        ld (hl),a               ;draw char
+     
+
+        inc de                  ;get next graph byte 
+        inc de
+   
+        inc hl
+        inc ixh                 ;get next row byte address
+        call getPixelAddr
+        djnz Shift
+	ld a,(playPos_y)
+        ld ixh,a
+        
+        ret 
+    
 SaveBackground
         call getPixelAddr
         ld a,(hl)               ;get first byte
@@ -227,6 +277,7 @@ SaveBackground
         djnz SaveBackground
 
         ret
+INFOREGROUND DEFB 0
 ISJUMP	   DEFB 0
 JUMPCOUNT  DEFB 0
 ISMOVING   DEFB 0
