@@ -226,14 +226,14 @@ Shift
         ld a,(de)               ;load first byte
         or (hl)
         ld (hl),a               ;write to screen mem
-        inc de
+;        inc de
         inc de                  ;get next byte 
         inc hl                  ;get adjecent 8x8 cell
         ld a,(de)               ;load adj cell
         or (hl)
         ld (hl),a
         inc de                  ;get next byte
-        inc de
+;        inc de
         inc ixh                 ;get next row byte address
         call getPixelAddr
         djnz Shift
