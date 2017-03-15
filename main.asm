@@ -172,7 +172,7 @@ Interrupt
        
 LevelSelect:
         
-        cp 34 	;;33
+        cp 33
         jp z,ARROW1
 
         ld a,ixl
@@ -184,7 +184,7 @@ LevelSelect:
         jp z,ARROW3
    
         ld a,ixl
-        cp 206  ;;219
+        cp 219
         jp z,ARROW4
        
         ret
@@ -197,19 +197,22 @@ EnterLevel
         ld (FACERIGHT),a
         ld a,(level_selected)
         cp 1
-        jp z, LEVEL2 ;;CHANGE 
+        jp z, LEVEL1
         
+        add a, 1
         cp 2
-        jp z, LEVEL2
+        jp z, LEVEL1
     
+        add a, 2
         cp 3
-        jp z, LEVEL2
+        jp z, LEVEL1
 
+        add a, 3
         cp 4
-        jp z, LEVEL2
+        jp z, LEVEL1
 
-;INCLUDE level1.asm ;;CHANGE
-INCLUDE level2.asm
+INCLUDE level1.asm
+        
 ARROW1:
         ld ix,(firArrow)
         ld a, 1
@@ -248,8 +251,7 @@ INCLUDE movement.asm
 INCLUDE render.asm     
 INCLUDE ash.asm
 INCLUDE title.asm
-INCLUDE level2_scene1.ASM
-;INCLUDE lvls.asm ;CHANGE
+INCLUDE lvls.asm 
 
 
 platform
