@@ -1,47 +1,13 @@
-	
-
-
+START   
         org 33000
-	di
-
-title	ld hl, 16384            ;clear screen
-        ld de, 16385
-        ld bc, 6143           
-        ld (hl), 0
-        ldir                    ;increment hl de, decrement bc
-        ld b, 192               ;192 lines to draw
-        ld ix, 0                ;start at 0,0
-        call getPixelAddr
-                                ;move address to de reg
-        ld d, h
-        ld e, l           
-        ld hl, TITLE           ;title reference
-
-lineloop 
-        ld a, b
-        ld bc, 32               ;copy graphic data to display file
-        ldir
-        ld b,a
-        inc ixh                 ;next row byte
-        ld ixl, 0
-        push hl
-        call getPixelAddr
-        ld d, h
-        ld e, l  
-        pop hl                
-        djnz lineloop
-       	 
-       
-        ld de, 22528            ;set attribute color
-        ld bc, 768
-        ldir
-        ld a, 0
-        call 8859               ;set border color
-        ei 
-
-        
-main	
+        di
         call SetInterrupt
+        di
+title	
+        call RestartPosition
+        call RenderTitleScreen        
+main	
+        
 	ld ix,(firArrow)
         ld a, ixl
         ld (oldArrowx),a
@@ -55,10 +21,9 @@ main
         ld a, (playPos_x)       ; x position
 	ld ixl,a
 	call getPixelAddr
+        ld (SCRNADDR), hl
 
-	ld de,ash1              ; ref graphic data
         ld b, 16                ; draw 16 rows
-
         call DrawAsh
         ld iy,0                 ;32 columns to draw
 
@@ -66,7 +31,8 @@ DrawPlatforms
         ld ixl, 0               ; x position
 
 ChangedX
-        ld ixh, 184             ; y position
+
+        ld ixh, 176          ; y position
 	call getPixelAddr
         ld de,platform          ; ref graphic data
         ld b, 8                 ; draw 8 rows
@@ -86,8 +52,28 @@ DrawNextCell
         inc ixl 
         jp nz,ChangedX
 
+        ld a, (playPos_y)       ;load init y player position
+	ld ixh,a
+        ld a, (playPos_x)       ; x position
+	ld ixl,a
+        ld (SCRNADDR), hl
+        ei
 
-MainLoop
+mainloop:
+        
+        call MovementLoop
+        push ix
+        call LevelSelect
+        pop ix
+        ;check for level selected
+        ld bc, 49150
+        in a, (c)
+        rra                      ;was "enter" pressed
+        call nc, EnterLevel
+      
+        jp mainloop
+
+MovementLoop
        
         ;load player position
 	ld a,(playPos_y)
@@ -95,12 +81,12 @@ MainLoop
 	ld a,(playPos_x)
 	ld (OLDx),a
 
-	call Gravity	
+	;call Gravity	
 	;check for jump movement
         ld bc,32766             ;keyboard b,n,m,shift,space
-        in a,(c)
-        rra
-        call nc,Jump
+        ;in a,(c)
+        ;rra
+        ;call nc,Jump
 	
 	;check for L/R movement
 	ld bc, 65022            ;keyboard asdfg ports
@@ -114,29 +100,19 @@ MainLoop
 	push af
 	call nc,MoveRight
 	pop af
-	call clearMe
-	call drawMe
+        
         
 	;store player position
 	ld a,ixh
 	ld (playPos_y),a
 	ld a,ixl
-        push ix
-        call LevelSelect
-        pop ix
-        ld a,ixl
 	ld (playPos_x),a
 	xor a	; clear a
 	ld (ISMOVING),a	;stop movement animation
 
 
-        ;check for level selected
-        ld bc, 49150
-        in a, (c)
-        rra                      ;was "enter" pressed
-        call nc, EnterLevel
       
-	jp MainLoop
+	ret
 
 SetInterrupt
   	di
@@ -160,8 +136,10 @@ Interrupt
        push de
        push ix
        rst 56
-                           ; ROM routine, read keys and update clock.
-       pop ix              ; ADD OUR OWN INTERRUPT ROUTINE <----------------------
+       ld a, (in_level)
+       cp 1
+       call z, MoveDonuts               ; ROM routine, read keys and update clock.
+       pop ix                              ; ADD OUR OWN INTERRUPT ROUTINE <----------------------
        pop de
        pop hl
        pop bc
@@ -169,9 +147,8 @@ Interrupt
        ei   
        ret
         
-       
 LevelSelect:
-        
+        ld a,ixl
         cp 33
         jp z,ARROW1
 
@@ -188,26 +165,37 @@ LevelSelect:
         jp z,ARROW4
        
         ret
-EnterLevel
+RestartPosition:
+
         ld a,0
         ld (playPos_x), a
-        ld a,167
+        ld a,159
+        ld (playPos_y), a
+        ld a,1
+     
+        ret
+EnterLevel
+
+        ld a,0
+        ld (playPos_x), a
+        ld a,159
         ld (playPos_y), a
         ld a,1
         ld (FACERIGHT),a
+        di
         ld a,(level_selected)
         cp 1
         jp z, LEVEL1
         
-        add a, 1
+     
         cp 2
         jp z, LEVEL1
     
-        add a, 2
+     
         cp 3
         jp z, LEVEL1
 
-        add a, 3
+     
         cp 4
         jp z, LEVEL1
 
@@ -247,11 +235,12 @@ gameover
 
 	ret; 
 
-INCLUDE movement.asm
+INCLUDE movementR2.asm
 INCLUDE render.asm     
 INCLUDE ash.asm
-INCLUDE title.asm
-INCLUDE lvls.asm 
+INCLUDE "title.asm"
+INCLUDE RenderTitleScreen.asm
+INCLUDE lvl1.asm 
 
 
 platform
@@ -260,3 +249,4 @@ platform
 	DEFB	 56
 
 level_selected DEFB 0
+in_level defb 0

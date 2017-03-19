@@ -68,11 +68,9 @@ BlackOut
 DrawAsh
         di                      ;disable interrupts
        
-       
-        ld (SCRNADDR), hl
         ld iy,BKGRNDBUFF
         ld b,16                 ;16 rows to save
-
+        ld ix, (playPos_x)
 STOREBACKGROUND
         
         call getPixelAddr
@@ -94,21 +92,10 @@ STOREBACKGROUND
         ld a, (playPos_x)       ; x position
 	ld ixl,a
         ld b, 16
-        ld de, ash1
+        ld de, ash1_r
 
 DrawSprite
-        
-        ld a,(de)               ;load first byte
-	ld (hl),a               ;write to screen mem
-        inc de                  ;get neddxt byte 
-        inc hl                  ;get adjecent 8x8 cell
-        ld a,(de)               ;load adj cell
-        ld (hl),a
-        inc de                  ;get next byte
-        inc ixh                 ;get next row byte address
-        call getPixelAddr
-	djnz DrawSprite
-        ei
+        call Shift
         ret        
         
 
@@ -145,10 +132,10 @@ oldPlayPos_y:
 playPos_x:
 	DEFB 0
 playPos_y:
-	DEFB 167
+	DEFB 159
 curPos_x:
-        DEFB 39
+        DEFB 0
 curPos_y:
-        DEFB 123
+        DEFB 159
 isJump:
 	DEFB 0

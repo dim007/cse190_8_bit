@@ -60,19 +60,19 @@ Jump
 JumpEnd	ret
 Gravity
 	ld a,(playPos_y)
-	cp 167
+	cp 159
 	jp z,stopFll
 	inc a
-	cp 167
+	cp 159
 	jp z,stopFll
 	inc a
-	cp 167
+	cp 159
 	jp z,stopFll
 	inc a
-	cp 167
+	cp 159
 	jp z,stopFll
 	inc a
-	cp 167
+	cp 159
 	jp z,stopFll
 	ld (playPos_y),a
 	ld ixh,a
