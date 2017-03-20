@@ -138,7 +138,7 @@ Interrupt
        rst 56
        ld a, (in_level)
        cp 1
-       call z, MoveDonuts               ; ROM routine, read keys and update clock.
+       call z, MoveDonutsProc              ; ROM routine, read keys and update clock.
        pop ix                              ; ADD OUR OWN INTERRUPT ROUTINE <----------------------
        pop de
        pop hl
@@ -146,7 +146,22 @@ Interrupt
        pop af
        ei   
        ret
+MoveDonutsProc:
+       
+       ld a, (dTimer)
+       dec a
+       ld (dTimer),a
+       cp 0
+       call z, CAP
+       call MoveDonuts
+       ret 
+CAP:    
+        ld a, (NUMBEROFDONUTS)
+        cp 0
+        call nz, SetUpDonuts
         
+        ret    
+   
 LevelSelect:
         ld a,ixl
         cp 33
@@ -247,6 +262,5 @@ platform
 
         DEFB	255,255,129,129,255,129,129,129
 	DEFB	 56
-
 level_selected DEFB 0
 in_level defb 0
