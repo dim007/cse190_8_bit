@@ -30,9 +30,6 @@ scene1:
         ld e, 1            ;sign of x
         call 9402
 
-       
-
-
         ld a,(playPos_x)
         ld ixl,a
         ld a,(playPos_y)
@@ -45,12 +42,10 @@ scene1:
         ld iy,BKGRNDBUFF
         ld b,16
         call SaveBackground
-
         pop hl
         pop ix
         call DrawAsh
-        push ix
-        push hl
+       
         ld a, 1
         ld (in_level), a
         ei
@@ -77,8 +72,9 @@ adjC
 
 DrawDonut:
         
-        push bc
-        ld b,2
+         push bc
+         ld b,2
+        
 adjF    
         ld a, (de)
         or (hl)
@@ -90,9 +86,9 @@ adjF
         inc ixh
         call getPixelAddr
 
-       pop bc
+        pop bc
         djnz DrawDonut
-        
+      
         ret
 
 DrawLvl1Platforms
@@ -116,7 +112,7 @@ DrawLvl1Platforms
 DrawConnectedPoints:
 
         push bc
-        ld b, (ix)             ;delta y
+        ld b, (ix)              ;delta y
         ld c, (ix+1)            ;delta x
         ld d, (ix+2)            ;sign of y
         ld e, (ix+3)            ;sign of x
@@ -131,12 +127,13 @@ DrawConnectedPoints:
         ret   
      
 AnimateSnorlax:
-        push ix
+        
         ld b, 48
         
         ld ixl,96
         ld ixh,0
         call getPixelAddr
+        push de
         push ix
         push hl
         push bc
@@ -144,7 +141,8 @@ AnimateSnorlax:
         pop bc
         pop hl
         pop ix
-        ld de, snorlaxInv
+        pop de
+        push de
         push ix
         push hl
         push bc
@@ -152,8 +150,10 @@ AnimateSnorlax:
         pop bc
         pop hl
         pop ix
-        pop ix
+        pop de
+        
         ret 
+
 ClearSnorlax:
         push bc
         ld b,8
@@ -171,7 +171,7 @@ adjG
         djnz ClearSnorlax 
         ret      
 scene1movement
-   
+      
         call MovementLoop
         ld a, (playPos_x) 
         cp 99
@@ -184,8 +184,7 @@ scene1movement
 	jp scene1movement  
 UpdateDonutPointer:
 
-        push bc
-        ld bc, 6
+  
         cp 0
         jr z, Projectile1
         cp 1
@@ -198,22 +197,25 @@ UpdateDonutPointer:
         jr z, Projectile5
         cp 5
         jr z, Projectile6
-
-        
-endTrans:
-        pop bc
         ret
-Projectile1:
         
+endTrans:  
+        ret
+
+Projectile1:
+
+        ld bc, 6
         ld de, currDptr
         ld hl, d1
         ld (ptrAddr), hl
         ldir
-        ld hl, 64556
+        ld hl, 64577
         ld (PROJECTILEBUFF), hl
         jr endTrans
 
 Projectile2:
+
+        ld bc, 6
         ld de, currDptr
         ld hl, d2
         ld (ptrAddr), hl
@@ -221,7 +223,9 @@ Projectile2:
         ld hl, 64642
         ld (PROJECTILEBUFF), hl
         jr endTrans
+
 Projectile3:
+        ld bc, 6
         ld de, currDptr
         ld hl, d3
         ld (ptrAddr), hl
@@ -229,14 +233,18 @@ Projectile3:
         ld hl, 64707
         ld (PROJECTILEBUFF), hl
         jr endTrans
+
 Projectile4:
+
+        ld bc, 6
         ld de, currDptr
         ld hl, d4
         ld (ptrAddr), hl
-        ld hl, 64512
-        ld (PROJECTILEBUFF), hl
         ldir
+        ld hl, 64772
+        ld (PROJECTILEBUFF), hl
         jr endTrans
+
 Projectile5:
         ld de, currDptr
         ld hl, d5
@@ -252,15 +260,17 @@ Projectile6:
         jr endTrans
 
 SetUpDonuts:
-        
-        ld a,100
+     
+        ld a, (DonutCounter)
+        inc a
+        ld a, (DonutCounter)
+      
+        ld a,150
         ld (dTimer), a
         ld a, (DONUTSONSCREEN)
 
         ;find index in stack of new donut position
-        call UpdateDonutPointer
-        
-        
+        call UpdateDonutPointer    
         
         ld de, donut
         ld ix,(currDptr)
@@ -273,59 +283,46 @@ SetUpDonuts:
         ld hl,(chl)
         ld b,16
         call DrawDonut
-        ld a, (NUMBEROFDONUTS)
-        dec a
-        ld (NUMBEROFDONUTS), a
+        
         ld a, (DONUTSONSCREEN)
         inc a
         ld (DONUTSONSCREEN),a
-
-        ld bc, 6
+        ld bc, 6                 ;save our data to projectile's mem location
         ld hl, currDptr
         ld de, (ptrAddr)
         ldir
+        ;ld de, snorlaxInv
+        ;call AnimateSnorlax
+
         ret 
 
 MoveDonuts:
-        di
-        ld a, (DONUTSONSCREEN)
-        ld b, a
-adjNigga 
-       
-        push bc
-        ld a,b
-        call iterateD
-        pop bc
-        djnz adjNigga
-        ret
+        push af
+        ld a, (DonutCounter)
+        dec a
+        ld (DonutCounter), a
+        pop af
   
 iterateD:  
         dec a
-        call UpdateDonutPointer     
+        call UpdateDonutPointer
+        call ShiftDonuts 
+        ret   
 ShiftDonuts:
-     
+        
         ld a, (cDir)
         
-        ;cp 1
-        ;jp z, ShiftUp
-   
-        push af
+        
         cp 1
-        call z, ShiftLeft
-        pop af
-
-        push af
+        jp z, ShiftLeft
+        
         cp 3
-        call z, ShiftDown
-        pop af
-
-        push af
+        jp z, ShiftDown
+           
         cp 0
-        call z, ShiftRight
-        pop af
-  
+        jp z, ShiftRight
         ret
-
+        
 DownDetection:
 
         push ix
@@ -333,6 +330,9 @@ DownDetection:
         ld a,ixh
         add a, 16
         ld ixh, a
+        ld a, ixh
+        cp 174
+        call z, resetdonut
         call getPixelAddr
         ld a,(hl)
         pop hl
@@ -341,15 +341,36 @@ DownDetection:
         jr z, DownObDet
         
         ret
+resetdonut:
+        ld a, 1
+        ld (resetdonutf), a
+        ld a, (cDir + 1)
+        cp 1
+        jr z, fCh
+   
+        ld bc, 6
+        ld de, (ptrAddr)
+        ld hl, dinit2
+        ldir
+        ret
+        
+fCh
+     
+        ld bc, 6
+        ld de, (ptrAddr)
+        ld hl, dinit
+        ldir
+      
+        ret
 
 DownObDet:
         ld a,(cDir + 1)
         ld (cDir), a
-        ld (cDir + 2), a
         xor 1
         ld (cDir + 1), a
    
         ret
+
 RightDetection:
         push ix
         push hl
@@ -369,21 +390,35 @@ RightObDet:
         ld a, 3
         ld (cDir), a
         ret
+
 ShiftDown:
+
         ld ix,(currDptr)
         call ClearProjectiles
+        ld ix, (currDptr)
         inc ixh
+        inc ixh
+        ld b,16
         call getPixelAddr
         call DownDetection
+        ld a, (resetdonutf)
+        cp 1
+        jr z, endDLoop
         call AshCollision
         call ShiftLogic
-        ret
-        
+endDLoop 
+         ld a, 0
+         ld (resetdonutf), a
+        ret  
 ShiftRight:
 
         ld ix,(currDptr)
         call ClearProjectiles
+        ld ix, (currDptr)
         inc ixl
+        inc ixl
+        inc ixl
+        ld b,16
         call getPixelAddr
         call RightDetection
         call AshCollision
@@ -394,6 +429,10 @@ ShiftLeft:
 
         ld ix,(currDptr)
         call ClearProjectiles
+        ld ix, (currDptr)
+        ld b,16
+        dec ixl
+        dec ixl
         dec ixl
         call getPixelAddr
         call RightDetection
@@ -415,15 +454,15 @@ ShiftLogic:
         ld de, (ptrAddr)
         ldir
         ret
-
 ClearProjectiles
+        
         push ix
-        ld ix, (currDptr)
         ld iy, (PROJECTILEBUFF)
-        ld hl,(chl)
+        call getPixelAddr
         ld b,16
         call ClearProjectile
         pop ix
+        
         ret
 
 ClearProjectile
@@ -457,30 +496,32 @@ AshCollision:
         ld iy,playPos_x
 
         sub (iy)
-        add a,15
-        cp 32
+        add a,10
+        cp 27
         jp c, ySame
         
         ret
 ySame:
          ld a,(currDptr+1)
          sub (iy+1)
-         add a,15
-         cp 32
+         add a,10
+         cp 27
          jp c, newgame
          ret
 newgame:
         di
         ld a, 0
         ld (in_level), a
-        ld (NUMBEROFDONUTS), a
         ld d, 8
         ld e, 72
         ld (d1), de
+        ld d, 8
+        ld e, 176
+        ld (d2), de
         ld a, 3
-        ld (d1Dir), a
-        ld a, 1
-        ld (d1Dir+1), a
+        ld d, 8
+        ld e, 72
+        ld (d3), de
         jp title
 
 SetFGFlag
@@ -494,38 +535,53 @@ scene2movement
         call MovementLoop
         jr scene2movement
       
-NUMBEROFDONUTS defb 2
+
 DONUTSONSCREEN defb 0
 
 d1    defb 72, 8
 d1Dir defb 3, 1  ;current direction and previous direction
 d1hl  defb 0, 0
-defb 0
+
+
 d2    defb 176, 8
 d2Dir defb 3, 0
 d2hl  defb 0, 0
-defb 0
-d3 defb 72, 8
-d3Dir defb 3, 1
-d3hl defb 0, 0
-defb 0
 
-d4 defb 176, 8
+
+d3    defb  72, 8
+d3Dir defb  3, 1
+d3hl  defb  0, 0
+
+
+d4    defb 176, 8
 d4Dir defb 3, 0
-d4hl defb 0, 0
-defb 0
-d5 defb 72, 8
+d4hl  defb 0, 0
+
+d5    defb 72, 8
 d5Dir defb 3, 1
-d5hl defb 0, 0
-d6 defb 176, 8
+d5hl  defb 0, 0
+
+d6    defb 176, 8
 d6Dir defb 3, 0
-d6hl defb 0, 0
+d6hl  defb 0, 0
 
-currDptr defb 176, 8
-cDir defb 3, 0
-chl  defb 0, 0
-ptrAddr defb 0, 0
+currDptr defb 0, 0
+cDir     defb 0, 0
+chl      defb 0, 0
+
+dinit    defb 176, 8
+dinitDir defb 3, 0
+dinithl  defb 0, 0
+
+dinit2    defb 72, 8
+dinit2Dir defb 3, 1
+dinit2hl  defb 0, 0
+
+ptrAddr defw 0
+
 dTimer defb 1
-PROJECTILEBUFF defb 0, 0
-
+PROJECTILEBUFF defw 0
+DCounter defb 0
+DonutCounter defb 0
+resetdonutf defb 0
      

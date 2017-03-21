@@ -1,7 +1,7 @@
 
 firstLPlats:
 ;------------------------------------------------------------------
-defb 43, 13     ;plot point
+defb 31, 13     ;plot point
 
 defb 6, 0       ;deltas to point 2 (y,x)
 defb -1, 1      ;signs
@@ -15,7 +15,7 @@ defb 1, 0
 defb 0, 92
 defb 1, -1
 ;---------------------------------------------------------------------
-defb 43, 126    ;plot point
+defb 31, 126    ;plot point
 
 defb 6, 0       ;deltas to point 2 (y,x)
 defb -1, 1      ;signs
@@ -30,7 +30,7 @@ defb 0, 69
 defb 1, -1
 
 ;-------------------------------------------------------------------
-defb 43, 210    ;plot point
+defb 31, 210    ;plot point
 
 defb 6, 0       ;deltas to point 2 (y,x)
 defb -1, 1      ;signs
@@ -45,7 +45,7 @@ defb 0, 44
 defb 1, -1
 ;-------------------------------------------------------------------------
 
-defb 67, 48     ;plot point
+defb 63, 48     ;plot point
 
 defb 6, 0       ;deltas to point 2 (y,x)
 defb -1, 1      ;signs
@@ -61,7 +61,7 @@ defb 1, -1
 
 
 ;---------------------------------------------------------------------
-defb 67, 161     ;plot point
+defb 63, 161     ;plot point
 
 defb 6, 0       ;deltas to point 2 (y,x)
 defb -1, 1      ;signs
@@ -75,12 +75,12 @@ defb 1, 0
 defb 0, 32
 defb 1, -1
 ;------------------------------------------------------------------
-defb 93, 66     ;plot point
+defb 91, 66     ;plot point
 
 defb 6, 0       ;deltas to point 2 (y,x)
 defb -1, 1      ;signs
 
-defb 0, 119      ;deltas to point 3 
+defb 0, 119      ;deltas to point 3 a
 defb 1, 1       ;signs
 
 defb 6, 0   
@@ -96,7 +96,7 @@ defb 6, 0       ;deltas to point 2 (y,x)
 defb -1, 1      ;signs
 
 defb 0, 112      ;deltas to point 3 
-defb 1, 1       ;signs
+defb 1, 1       ;sign
 
 defb 6, 0   
 defb 1, 0
@@ -196,7 +196,14 @@ defb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 defb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 donut:
-defb 0, 0, 0, 0, 0, 0, 0, 0, 3, 192, 13, 176, 17, 40, 33, 164, 42, 76, 34, 76, 38
+defb 0, 0
+donut1 defb 0, 0 
+donut2 defb 0, 0
+donut3 defb 0, 0
+donut4 defb 3, 192 
+donut5 defb 13, 176
+donut6 defb 17, 40
+donut7 defb 33, 164, 42, 76, 34, 76, 38
 defb 76, 33, 148, 16, 152, 15, 48, 1, 192, 0, 0
 
 

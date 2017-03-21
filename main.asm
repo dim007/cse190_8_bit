@@ -80,40 +80,43 @@ MovementLoop
 	ld (OLDy),a
 	ld a,(playPos_x)
 	ld (OLDx),a
-
-	;call Gravity	
+        
+        ;call Gravity	
 	;check for jump movement
         ld bc,32766             ;keyboard b,n,m,shift,space
-        ;in a,(c)
-        ;rra
-        ;call nc,Jump
-	
+        in a,(c)
+        rra
+        call nc, jh
+
 	;check for L/R movement
 	ld bc, 65022            ;keyboard asdfg ports
         in a, (c)               ;what keys were pressed
         rra                     ;was "a" pressed?
         push af      
-        call nc,MoveLeft
+        jp nc,MoveLeft
         pop af
         rra		        ;rotate right, skip "s" for now
 	rra		        ;rotate right for "d" key
 	push af
-	call nc,MoveRight
-	pop af
-        
-        
-	;store player position
-	ld a,ixh
-	ld (playPos_y),a
-	ld a,ixl
-	ld (playPos_x),a
-	xor a	; clear a
-	ld (ISMOVING),a	;stop movement animation
-
-
+	jp nc,MoveRight
+        pop af
+	
       
-	ret
+        ;call Gravity	
+	;check for jump movement
+        ld bc,32766             ;keyboard b,n,m,shift,space
+        in a,(c)
+        rra
+        jp nc, Jump
 
+        ld a, 0
+        ld (JUMPHELD), a
+        
+	ret
+jh:
+        ld a, 1
+        ld (JUMPHELD), a
+        ret
 SetInterrupt
   	di
         ld hl, Interrupt
@@ -130,22 +133,38 @@ SetInterrupt
 
 Interrupt
        di
-       push af             ; preserve registers.
-       push bc
-       push hl
-       push de
-       push ix
-       rst 56
+       push          af
+       push          hl
+       push          bc
+       push          de
+       push          ix
+       push          iy
+       exx
+       ex            af,af'
+       push          af
+       push          hl
+       push          bc
+       push          de
+
        ld a, (in_level)
        cp 1
-       call z, MoveDonutsProc              ; ROM routine, read keys and update clock.
-       pop ix                              ; ADD OUR OWN INTERRUPT ROUTINE <----------------------
-       pop de
-       pop hl
-       pop bc
-       pop af
-       ei   
-       ret
+       call z, MoveDonutsProc              ; rom routine, read keys and update clock.
+      
+        pop           de
+        pop           bc
+        pop           hl
+        pop           af
+        ex           af,af'
+        exx
+        pop           iy
+        pop           ix
+        pop           de
+        pop           bc
+        pop           hl
+        pop           af
+        ei
+        reti
+
 MoveDonutsProc:
        
        ld a, (dTimer)
@@ -153,15 +172,29 @@ MoveDonutsProc:
        ld (dTimer),a
        cp 0
        call z, CAP
-       call MoveDonuts
+       
+       call MoveOneDonut
+    
        ret 
 CAP:    
-        ld a, (NUMBEROFDONUTS)
-        cp 0
+        ld a, (DONUTSONSCREEN)
+        cp 3
         call nz, SetUpDonuts
-        
-        ret    
    
+        ret    
+MoveOneDonut:
+        ld a, (DonutCounter)
+        cp 0
+        call nz, MoveDonuts
+        ld a,(DonutCounter)
+        call z, RestartCycle
+       
+	ret 
+RestartCycle:
+        ld a, (DONUTSONSCREEN)
+        ld (DonutCounter), a
+        ret
+                 
 LevelSelect:
         ld a,ixl
         cp 33
@@ -196,7 +229,7 @@ EnterLevel
         ld a,159
         ld (playPos_y), a
         ld a,1
-        ld (FACERIGHT),a
+        ld (FACINGRIGHT),a
         di
         ld a,(level_selected)
         cp 1
@@ -259,7 +292,6 @@ INCLUDE lvl1.asm
 
 
 platform
-
         DEFB	255,255,129,129,255,129,129,129
 	DEFB	 56
 level_selected DEFB 0
