@@ -1,44 +1,44 @@
 
 firstLPlats:
 ;------------------------------------------------------------------
-defb 31, 13     ;plot point
+defb 21, 13     ;plot point
 
-defb 6, 0       ;deltas to point 2 (y,x)
+defb 5, 0       ;deltas to point 2 (y,x)
 defb -1, 1      ;signs
 
 defb 0, 92      ;deltas to point 3 
 defb 1, 1       ;signs
 
-defb 6, 0   
+defb 5, 0   
 defb 1, 0
 
 defb 0, 92
 defb 1, -1
 ;---------------------------------------------------------------------
-defb 31, 126    ;plot point
+defb 21, 126    ;plot point
 
-defb 6, 0       ;deltas to point 2 (y,x)
+defb 5, 0       ;deltas to point 2 (y,x)
 defb -1, 1      ;signs
 
 defb 0, 69      ;deltas to point 3 
 defb 1, 1       ;signs
 
-defb 6, 0   
+defb 5, 0   
 defb 1, 0
 
 defb 0, 69
 defb 1, -1
 
 ;-------------------------------------------------------------------
-defb 31, 210    ;plot point
+defb 21, 210    ;plot point
 
-defb 6, 0       ;deltas to point 2 (y,x)
+defb 5, 0       ;deltas to point 2 (y,x)
 defb -1, 1      ;signs
 
 defb 0, 44      ;deltas to point 3 
 defb 1, 1       ;signs
 
-defb 6, 0   
+defb 5, 0   
 defb 1, 0
 
 defb 0, 44

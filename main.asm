@@ -100,18 +100,16 @@ MovementLoop
 	push af
 	jp nc,MoveRight
         pop af
-	
-      
-        ;call Gravity	
+
+       
 	;check for jump movement
-        ld bc,32766             ;keyboard b,n,m,shift,space
-        in a,(c)
-        rra
-        jp nc, Jump
+        ld a, (JUMPHELD)
+        cp 1
+        jp z, Jump
 
         ld a, 0
         ld (JUMPHELD), a
-        
+	
 	ret
 jh:
         ld a, 1
