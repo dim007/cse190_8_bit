@@ -332,7 +332,7 @@ DownDetection:
         ld ixh, a
         ld a, ixh
         cp 174
-        ;call z, resetdonut
+        call z, resetdonut
         call getPixelAddr
         ld a,(hl)
         pop hl
@@ -504,8 +504,8 @@ AshCollision:
 ySame:
          ld a,(currDptr+1)
          sub (iy+1)
-         add a,8
-         cp 8
+         add a,12
+         cp 12
          jp c, newgame
          ret
 newgame:

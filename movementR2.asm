@@ -85,6 +85,7 @@ MoveLeft
 
         ld a, 0
         ld (FACINGRIGHT), a
+
         call UpdatePlayerPosition      ;update player position
         pop af
         ret
@@ -97,24 +98,17 @@ Jump:
         jp z, JumpR                    ;Jump routines that handles right and left jump 
         jp JumpL                       ;in a straight vertical direction
          
-JumpR:                                 ;Character is facing right
-        ld de, ash3_r
-        call UpLoop
-        call DownLoop
-        call UpdatePlayerPosition
-        ld a, 0
-        ld (JUMPHELD), a               ;No Longer Jumping
-        
-        ret
-JumpL:                                 ;Character is facing left
-        ld de, ash3
+JumpR: ld de,ash3_r
+       jp VertUp
+JumpL: ld de, ash3                     ;Character is facing left
+       jp VertUp
+VertUp:                                ;Simple Verticle Jump                              
+       
         call UpLoop
         call DownLoop   
         call UpdatePlayerPosition
         ld a, 0
         ld (JUMPHELD), a 
-        
-
         ret
 UpLoop:
         push bc                        ;Save reg that holds how many times to shift up
