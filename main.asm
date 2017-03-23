@@ -1,7 +1,7 @@
 START   
         org 33000
         di
-        call SetInterrupt
+        call SetInterrupt              ;Set up interrupt
         di
 title	
         call RestartPosition
@@ -16,45 +16,43 @@ main
 
         call DrawArrow
 	;normal main
-        ld a, (playPos_y)       ;load init y player position
-	ld ixh,a
-        ld a, (playPos_x)       ; x position
-	ld ixl,a
+        call RestartPosition           ;load initial player position
+
 	call getPixelAddr
         ld (SCRNADDR), hl
 
-        ld b, 16                ; draw 16 rows
+        ld b, 16                       ; draw 16 rows
         call DrawAsh
-        ld iy,0                 ;32 columns to draw
+        ld iy,0                        ;32 columns to draw
 
-DrawPlatforms
-        ld ixl, 0               ; x position
+DrawGround
+        ld ixl, 0                      ; x position
 
 ChangedX
 
-        ld ixh, 176          ; y position
+        ld ixh, 176                    ; y position
 	call getPixelAddr
-        ld de,platform          ; ref graphic data
-        ld b, 8                 ; draw 8 rows
+        ld de,platform                 ; ref graphic data
+        ld b, 8                        ; draw 8 rows
 
 DrawNextCell
 
-        ld a,(de)               ;load first byte
-	ld (hl),a               ;write to screen mem
-        inc de                  ;get next byte
-        inc ixh                 ;get next row byte address
+        ld a,(de)                      ;load first byte
+	ld (hl),a                      ;write to screen mem
+        inc de                         ;get next byte
+        inc ixh                        ;get next row byte address
         call getPixelAddr
 	djnz DrawNextCell
 
-        inc iy                  ;next column
+        inc iy                         ;next column
         ld a, iyl
         cp 32
         inc ixl 
         jp nz,ChangedX
 
-        ld a, (playPos_y)       ;load init y player position
+        ld a, (playPos_y)              ;load init y player position
 	ld ixh,a
-        ld a, (playPos_x)       ; x position
+        ld a, (playPos_x)              ; x position
 	ld ixl,a
         ld (SCRNADDR), hl
         ei
@@ -115,84 +113,7 @@ jh:
         ld a, 1
         ld (JUMPHELD), a
         ret
-SetInterrupt
-  	di
-        ld hl, Interrupt
-        ld ix, &FFF0
-        ld (ix+04h), &c3
-        ld (ix+05h),l
-        ld (ix+06h),h
-        ld (ix+0Fh),&18
-        ld a, &39
-        ld i,a
-        im 2
-        ei
-        ret
 
-Interrupt
-       di
-       push          af
-       push          hl
-       push          bc
-       push          de
-       push          ix
-       push          iy
-       exx
-       ex            af,af'
-       push          af
-       push          hl
-       push          bc
-       push          de
-
-       ld a, (in_level)
-       cp 1
-       call z, MoveDonutsProc              ; rom routine, read keys and update clock.
-      
-        pop           de
-        pop           bc
-        pop           hl
-        pop           af
-        ex           af,af'
-        exx
-        pop           iy
-        pop           ix
-        pop           de
-        pop           bc
-        pop           hl
-        pop           af
-        ei
-        reti
-
-MoveDonutsProc:
-       
-       ld a, (dTimer)
-       dec a
-       ld (dTimer),a
-       cp 0
-       call z, CAP
-       
-       call MoveOneDonut
-    
-       ret 
-CAP:    
-        ld a, (DONUTSONSCREEN)
-        cp 3
-        call nz, SetUpDonuts
-   
-        ret    
-MoveOneDonut:
-        ld a, (DonutCounter)
-        cp 0
-        call nz, MoveDonuts
-        ld a,(DonutCounter)
-        call z, RestartCycle
-       
-	ret 
-RestartCycle:
-        ld a, (DONUTSONSCREEN)
-        ld (DonutCounter), a
-        ret
-                 
 LevelSelect:
         ld a,ixl
         cp 33
@@ -217,8 +138,6 @@ RestartPosition:
         ld (playPos_x), a
         ld a,159
         ld (playPos_y), a
-        ld a,1
-     
         ret
 EnterLevel
 
@@ -287,6 +206,7 @@ INCLUDE ash.asm
 INCLUDE "title.asm"
 INCLUDE RenderTitleScreen.asm
 INCLUDE lvl1.asm 
+INCLUDE InterruptHandler.asm
 
 
 platform
