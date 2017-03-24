@@ -5,35 +5,32 @@ LEVEL1
 scene1:
         
         di
-        call 3503
+        call 3503                      ;clear screen
 
-        ld b, 48
-        ld de, snorlax
+        ld b, 48                       ;Draw Snorlax
+        ld de, snorlax                 
         ld ixl,96
         ld ixh,0
         call getPixelAddr
         call DrawSnorlax
 
         ;Draw first level platforms
-        ld b, 10
-        ld ix, firstLPlats
-        call DrawLvl1Platforms
+        ld b, 10                       ;ten squares to draw
+        ld ix, firstLPlats             ;location of frist level platforms
+        call DrawPlatforms
 
-        ld b, 0
+        ld b, 0                        ;Draw base line
         ld c, 0
         ld (23677), bc
         call 8933  
 
-        ld b, 0            ;delta y
-        ld c, 255          ;delta x
-        ld d, 0            ;sign of y
-        ld e, 1            ;sign of x
+        ld b, 0                        ;delta y
+        ld c, 255                      ;delta x
+        ld d, 0                        ;sign of y
+        ld e, 1                        ;sign of x
         call 9402
 
-        ld a,(playPos_x)
-        ld ixl,a
-        ld a,(playPos_y)
-        ld ixh,a
+        call RestartPosition
         
         call getPixelAddr
         ld (SCRNADDR), hl
@@ -46,10 +43,10 @@ scene1:
         pop ix
         call DrawAsh
        
-        ld a, 1
+        ld a, 1                        ;Notify Interrupt Handler that we are in level 1
         ld (in_level), a
         ei
-        jp scene1movement
+        jp LevelMovement
         
 DrawSnorlax:
         push bc
@@ -70,6 +67,42 @@ adjC
 
         ret
 
+;Main platform drawing routine
+;Uses rom routine to connect 4 points
+
+DrawPlatforms
+
+        push bc
+        
+        ld b, (ix)              ;ix holds location of points
+        ld c, (ix + 1)   
+        ld (23677), bc          ;calls PLOT function
+        call 8933               ;plots a single initial point
+        inc ix                  ;move on to next point
+        inc ix
+
+        ld b, 4
+        call DrawConnectedPoints
+        pop bc
+        djnz DrawPlatforms
+
+        ret
+DrawConnectedPoints:
+
+        push bc
+        ld b, (ix)              ;delta y
+        ld c, (ix+1)            ;delta x
+        ld d, (ix+2)            ;sign of y
+        ld e, (ix+3)            ;sign of x
+        call 9402
+        inc ix
+        inc ix
+        inc ix
+        inc ix
+        pop bc
+        
+        djnz DrawConnectedPoints
+        ret  
 DrawDonut:
         
          push bc
@@ -90,42 +123,7 @@ adjF
         djnz DrawDonut
       
         ret
-
-DrawLvl1Platforms
-
-        push bc
-        
-        ld b, (ix)
-        ld c, (ix + 1)   
-        ld (23677), bc
-        call 8933               ;plots a single point
-        inc ix
-        inc ix
-
-        ld b, 4
-        call DrawConnectedPoints
-        pop bc
-        djnz DrawLvl1Platforms
-
-        ret
-
-DrawConnectedPoints:
-
-        push bc
-        ld b, (ix)              ;delta y
-        ld c, (ix+1)            ;delta x
-        ld d, (ix+2)            ;sign of y
-        ld e, (ix+3)            ;sign of x
-        call 9402
-        inc ix
-        inc ix
-        inc ix
-        inc ix
-        pop bc
-        
-        djnz DrawConnectedPoints
-        ret   
-     
+   
 AnimateSnorlax:
         
         ld b, 48
@@ -170,18 +168,10 @@ adjG
         pop bc
         djnz ClearSnorlax 
         ret      
-scene1movement
+LevelMovement
       
         call MovementLoop
-        ld a, (playPos_x) 
-        cp 99
-        jp z, SetFGFlag
-        
-        ld a, (playPos_x)
-        cp 195
-        ;jp z, GoToScene2
-
-	jp scene1movement  
+	jp LevelMovement 
 UpdateDonutPointer:
 
   
@@ -524,13 +514,6 @@ newgame:
         ld (d3), de
         jp title
 
-SetFGFlag
-
-         ld a, (INFOREGROUND)
-         xor 1
-         ld (INFOREGROUND), a
-	 jp scene1movement
- 
 scene2movement
         call MovementLoop
         jr scene2movement

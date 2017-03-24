@@ -102,7 +102,7 @@ JumpR: ld de,ash3_r
        jp VertUp
 JumpL: ld de, ash3                     ;Character is facing left
        jp VertUp
-VertUp:                                ;Simple Verticle Jump                              
+VertUp:                                ;Simple Vertical Jump                              
        
         call UpLoop
         call DownLoop   
@@ -242,7 +242,7 @@ DownArc2
        ld a, ixl
        sub 16
        ld ixl, a                       ;move left 16 pixels
-       ld a, ixh                       ;move up 24 pixels
+       ld a, ixh                       ;move down 24 pixels
        add a, b                        ;b was the value returned from checkforplatform subroutine
        ld ixh, a
        ld de, ash3 
