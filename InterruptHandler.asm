@@ -61,12 +61,15 @@ MoveDonutsProc:
        ret 
 CAP:    
         ld a, (DONUTSONSCREEN)
-        cp 3
+        cp 4
         call nz, SetUpDonuts           ;If cp has not been reached, make new donut
         ret 
    
 MoveOneDonut:
 
+        ld a, (DonutCounter)           ;cycle through all donuts
+        cp 0
+        call nz, MoveDonuts
         ld a, (DonutCounter)           ;cycle through all donuts
         cp 0
         call nz, MoveDonuts

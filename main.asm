@@ -154,7 +154,7 @@ EnterLevel
         
      
         cp 2
-        jp z, LEVEL1
+        jp z, LEVEL2
     
      
         cp 3

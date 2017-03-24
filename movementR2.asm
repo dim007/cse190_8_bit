@@ -94,7 +94,7 @@ Jump:
         
         ld a, (FACINGRIGHT)            ;Are we facing right?
         cp 1
-        ld b, 12                       ;Jumping for 12 iterations
+        ld b, 12                     ;Jumping for 12 iterations
         jp z, JumpR                    ;Jump routines that handles right and left jump 
         jp JumpL                       ;in a straight vertical direction
          
@@ -125,7 +125,7 @@ UpLoop:
               
 DownLoop:   
        
-                                       ;going down 2 pixels for 16 iterations
+                                       ;going down 2 pixels for 12 iterations
         call CheckForPlatform          ;check if there's any platforms before falling
                                        ;if so, fall till platform is reached
         
@@ -143,10 +143,23 @@ cont:
         pop bc
         djnz DLoop
                                       
-        ret   
+        ret 
+CheckForPlatformRAhead:                ;is jumping to the right
+       push ix
+       inc ixl
+       call CheckForPlatform
+       pop ix
+       ret  
+CheckForPlatformLAhead:                ;is jumping to the left
+       push ix
+       dec ixl
+       call CheckForPlatform
+       pop ix
+       ret  
+      
 CheckForPlatform:
        push ix
-       ld b, 15                        ;look at the 15 pixels below ash's feet
+       ld b, 15                       ;look at the 15 pixels below ash's feet
        ld a, ixh
        add a, 16
        ld ixh, a
@@ -154,12 +167,12 @@ checkLoop:
        
        call getPixelAddr               ;get screen address
        ld a,(hl)
-       cp 255                          ;check for platform
+       cp 255                            ;check for platform
        jr z, StopJump 
        inc ixh
        djnz checkLoop
        pop ix
-       ld b, 24                        ;Fall for full 24 pixels
+       ld b, 24                      ;Fall for full 24 pixels
        ret
 StopJump:
        pop ix                          ;Fall to Platform
@@ -175,7 +188,7 @@ UpArc
 
        call ClearMe                    ;Clear Screen
        ld a, ixl
-       add a, 16                       ;move right 16 pixels
+       add a, 16                      ;move right 16 pixels
        ld ixl, a
        ld a, ixh                       ;move up 24 pixels
        sub 24
@@ -192,7 +205,7 @@ UpArc
        ld bc, 20
 
 DownArc 
-       call CheckForPlatform           ;check for platforms below, draw on platofrm if found
+       call CheckForPlatformRAhead     ;check for platforms below, draw on platofrm if found
        call ClearMe                    ;Clear Screen
        ld a, ixl                       ;move right 16 pixels
        add a, 16                       ;move up 24 pixels
@@ -237,7 +250,7 @@ UpArc2
        ld bc, 20
 
 DownArc2 
-       call CheckForPlatform
+       call CheckForPlatformLAhead
        call ClearMe                    ;Clear Screen
        ld a, ixl
        sub 16

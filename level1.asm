@@ -1,24 +1,27 @@
-LEVEL1 
-       
-        
-       
-scene1:
-        
+LEVEL1:
+       call ClearScreen 
+       ;Draw first level platforms
+       ld b, 10                       ;ten squares to draw
+       ld ix, firstLPlats             ;location of frist level platforms
+       call DrawPlatforms
+       jp contsetup
+
+LEVEL2:
+       call ClearScreen
+       ;Draw first level platforms
+       ld b, 7                         ;ten squares to draw
+       ld ix, secondLPlats             ;location of frist level platforms
+       call DrawPlatforms   
+       jp contsetup  
+LEVEL3:
+     
+ClearScreen: 
+  
         di
         call 3503                      ;clear screen
-
-        ld b, 48                       ;Draw Snorlax
-        ld de, snorlax                 
-        ld ixl,96
-        ld ixh,0
-        call getPixelAddr
-        call DrawSnorlax
-
-        ;Draw first level platforms
-        ld b, 10                       ;ten squares to draw
-        ld ix, firstLPlats             ;location of frist level platforms
-        call DrawPlatforms
-
+        ret
+               
+contsetup:
         ld b, 0                        ;Draw base line
         ld c, 0
         ld (23677), bc
@@ -74,11 +77,11 @@ DrawPlatforms
 
         push bc
         
-        ld b, (ix)              ;ix holds location of points
+        ld b, (ix)                     ;ix holds location of points
         ld c, (ix + 1)   
-        ld (23677), bc          ;calls PLOT function
-        call 8933               ;plots a single initial point
-        inc ix                  ;move on to next point
+        ld (23677), bc                 ;calls PLOT function
+        call 8933                      ;plots a single initial point
+        inc ix                         ;move on to next point
         inc ix
 
         ld b, 4
@@ -90,10 +93,10 @@ DrawPlatforms
 DrawConnectedPoints:
 
         push bc
-        ld b, (ix)              ;delta y
-        ld c, (ix+1)            ;delta x
-        ld d, (ix+2)            ;sign of y
-        ld e, (ix+3)            ;sign of x
+        ld b, (ix)                     ;delta y
+        ld c, (ix+1)                   ;delta x
+        ld d, (ix+2)                   ;sign of y
+        ld e, (ix+3)                   ;sign of x
         call 9402
         inc ix
         inc ix
@@ -102,23 +105,25 @@ DrawConnectedPoints:
         pop bc
         
         djnz DrawConnectedPoints
-        ret  
+        ret 
+ 
 DrawDonut:
         
-         push bc
-         ld b,2
-        
+        push bc            
 adjF    
-        ld a, (de)
-        or (hl)
-        ld (hl), a
-        inc de
-        inc hl
-        djnz adjF
-
+        ex de, hl                             
+        ldi                            ;Ld (de),(hl) increment hl and de
+        ldi                            ;unrolling to optimize
         inc ixh
+        ex de, hl
         call getPixelAddr
-
+        ex de, hl
+        ldi
+        ldi
+        inc ixh
+        ex de, hl
+        call getPixelAddr
+        
         pop bc
         djnz DrawDonut
       
@@ -148,8 +153,7 @@ AnimateSnorlax:
         pop bc
         pop hl
         pop ix
-        pop de
-        
+        pop de  
         ret 
 
 ClearSnorlax:
@@ -172,9 +176,9 @@ LevelMovement
       
         call MovementLoop
 	jp LevelMovement 
+
 UpdateDonutPointer:
 
-  
         cp 0
         jr z, Projectile1
         cp 1
@@ -183,70 +187,49 @@ UpdateDonutPointer:
         jr z, Projectile3
         cp 3
         jr z, Projectile4
-        cp 4
-        jr z, Projectile5
-        cp 5
-        jr z, Projectile6
         ret
         
 endTrans:  
         ret
-
+UnRollLDIR:                            ;Fster than using ldir
+        ldi
+        ldi
+        ldi
+        ldi
+        ldi
+        ldi
+        ret
 Projectile1:
 
-        ld bc, 6
+
         ld de, currDptr
         ld hl, d1
         ld (ptrAddr), hl
-        ldir
-        ld hl, 64577
-        ld (PROJECTILEBUFF), hl
+        call UnRollLDIR
         jr endTrans
 
 Projectile2:
 
-        ld bc, 6
         ld de, currDptr
         ld hl, d2
         ld (ptrAddr), hl
-        ldir
-        ld hl, 64642
-        ld (PROJECTILEBUFF), hl
+        call UnRollLDIR
         jr endTrans
 
 Projectile3:
-        ld bc, 6
+
         ld de, currDptr
         ld hl, d3
         ld (ptrAddr), hl
-        ldir
-        ld hl, 64707
-        ld (PROJECTILEBUFF), hl
+        call UnRollLDIR
         jr endTrans
 
 Projectile4:
 
-        ld bc, 6
         ld de, currDptr
         ld hl, d4
         ld (ptrAddr), hl
-        ldir
-        ld hl, 64772
-        ld (PROJECTILEBUFF), hl
-        jr endTrans
-
-Projectile5:
-        ld de, currDptr
-        ld hl, d5
-        ld (ptrAddr), hl
-        ldir
-        jr endTrans
-
-Projectile6:
-        ld de, currDptr
-        ld hl, d6 
-        ld (ptrAddr), hl
-        ldir
+        call UnRollLDIR
         jr endTrans
 
 SetUpDonuts:
@@ -255,11 +238,11 @@ SetUpDonuts:
         inc a
         ld a, (DonutCounter)
       
-        ld a,150
+        ld a,100             
         ld (dTimer), a
         ld a, (DONUTSONSCREEN)
 
-        ;find index in stack of new donut position
+                                       ;find index in stack of new donut position
         call UpdateDonutPointer    
         
         ld de, donut
@@ -267,23 +250,16 @@ SetUpDonuts:
         
         call getPixelAddr
         ld (chl), hl
-        ld b, 16
-        call SaveProjectileBackground
-        
-        ld hl,(chl)
-        ld b,16
+        ld b,8
         call DrawDonut
         
         ld a, (DONUTSONSCREEN)
         inc a
         ld (DONUTSONSCREEN),a
-        ld bc, 6                 ;save our data to projectile's mem location
+                                       ;save our data to projectile's mem location
         ld hl, currDptr
         ld de, (ptrAddr)
-        ldir
-        ;ld de, snorlaxInv
-        ;call AnimateSnorlax
-
+        call UnRollLDIR
         ret 
 
 MoveDonuts:
@@ -297,12 +273,29 @@ iterateD:
         dec a
         call UpdateDonutPointer
         call ShiftDonuts 
-        ret   
+        ret  
+DonutShiftDownPixels:
+        inc ixh 
+        ;inc ixh
+        ret
+DonutShiftLeftPixels:
+        dec ixl
+        dec ixl
+       
+        ret
+DonutShiftRightPixels:
+        
+        inc ixl
+        inc ixl
+        ret 
 ShiftDonuts:
-        
+
+        ld ix,(currDptr)               ;get out donut coordinates
+        call ClearProjectiles
+        ld ix, (currDptr)
+
         ld a, (cDir)
-        
-        
+         
         cp 1
         jp z, ShiftLeft
         
@@ -312,7 +305,86 @@ ShiftDonuts:
         cp 0
         jp z, ShiftRight
         ret
+ShiftDown:
+
+        call DonutShiftDownPixels
+        ld b,16
+        call getPixelAddr
+        call DownDetection
+        ld a, (resetdonutf)
+        cp 1
+        jr z, endDLoop
+        call AshCollision
+        call ShiftLogic
+endDLoop
+        ld a, 0
+        ld (resetdonutf), a
+        ret  
+ShiftRight:
+
+        call DonutShiftRightPixels
+        ld b,16
+        call getPixelAddr
+        call OpeningDetection
+        call RightDetection
+        call AshCollision
+        call ShiftLogic 
+        ret
+       
+ShiftLeft:
+ 
+        call DonutShiftLeftPixels
+        ld b,16
+        call getPixelAddr
+        call OpeningDetection
+        call LeftDetection
+        call AshCollision
+        call ShiftLogic 
+        ret 
+    
+ShiftLogic:
         
+        ld (chl), hl
+        ld (currDptr), ix
+        ld de, donut
+        ld b,8
+        call DrawDonut 
+        ld hl, currDptr
+        ld de, (ptrAddr)
+        call UnRollLDIR
+        ret 
+RightDetection:
+        ld a,ixl
+        cp 238
+        jr z, DownObDet
+        ret 
+LeftDetection:
+        ld a,ixl
+        cp 2
+        jr z, DownObDet
+        ret 
+OpeningDetection:
+        push ix
+        push hl
+        ld a,ixh
+        add a, 16
+        ld ixh, a
+        call getPixelAddr
+        ld a,(hl)
+        inc hl
+        ld b, (hl)
+        add a, b
+        pop hl
+        pop ix
+        cp 0
+        jr z, FallObDet
+        ret
+
+FallObDet:
+
+        ld a, 3
+        ld (cDir), a
+        ret            
 DownDetection:
 
         push ix
@@ -325,35 +397,45 @@ DownDetection:
         call z, resetdonut
         call getPixelAddr
         ld a,(hl)
+        inc hl
+        ld b, (hl)
+        add a, b
         pop hl
         pop ix
-        cp 255
-        jr z, DownObDet
+        cp 0
+        jr nz, DownObDet
         
         ret
-resetdonut:
+resetdonut:                            ;reset current donut
         ld a, 1
         ld (resetdonutf), a
         ld a, (cDir + 1)
         cp 1
         jr z, fCh
-   
-        ld bc, 6
+  
         ld de, (ptrAddr)
         ld hl, dinit2
-        ldir
+        call UnRollLDIR
         ret
         
 fCh
-     
-        ld bc, 6
+        ld a, (cDir + 1)
+        cp 1
+        jp resD1
+ 
         ld de, (ptrAddr)
-        ld hl, dinit
-        ldir
+        ld hl, dinit2
+        call UnRollLDIR
       
         ret
-
+resD1:  
+        ld de, (ptrAddr)
+        ld hl, dinit
+        call UnRollLDIR
+        ret
+  
 DownObDet:
+
         ld a,(cDir + 1)
         ld (cDir), a
         xor 1
@@ -361,124 +443,28 @@ DownObDet:
    
         ret
 
-RightDetection:
-        push ix
-        push hl
-        ld a,ixh
-        add a, 16
-        ld ixh, a
-        call getPixelAddr
-        ld a,(hl)
-        pop hl
-        pop ix
-        cp 0
-        jr z, RightObDet
-        ret
-
-RightObDet:
-
-        ld a, 3
-        ld (cDir), a
-        ret
-
-ShiftDown:
-
-        ld ix,(currDptr)
-        call ClearProjectiles
-        ld ix, (currDptr)
-        inc ixh
-        inc ixh
-        ld b,16
-        call getPixelAddr
-        call DownDetection
-        ld a, (resetdonutf)
-        cp 1
-        jr z, endDLoop
-        call AshCollision
-        call ShiftLogic
-endDLoop 
-         ld a, 0
-         ld (resetdonutf), a
-        ret  
-ShiftRight:
-
-        ld ix,(currDptr)
-        call ClearProjectiles
-        ld ix, (currDptr)
-        inc ixl
-        inc ixl
-        inc ixl
-        ld b,16
-        call getPixelAddr
-        call RightDetection
-        call AshCollision
-        call ShiftLogic 
-        ret
-       
-ShiftLeft:
-
-        ld ix,(currDptr)
-        call ClearProjectiles
-        ld ix, (currDptr)
-        ld b,16
-        dec ixl
-        dec ixl
-        dec ixl
-        call getPixelAddr
-        call RightDetection
-        call AshCollision
-        call ShiftLogic 
-        ret 
-    
-ShiftLogic:
-        
-        ld (chl), hl
-        ld (currDptr), ix
-        ld b,16
-        call SaveProjectileBackground
-        ld de, donut
-        ld b,16
-        call DrawDonut 
-        ld bc, 6
-        ld hl, currDptr
-        ld de, (ptrAddr)
-        ldir
-        ret
 ClearProjectiles
         
         push ix
-        ld iy, (PROJECTILEBUFF)
         call getPixelAddr
         ld b,16
         call ClearProjectile
         pop ix
-        
         ret
 
 ClearProjectile
         
         
-        ld a,(iy)
+        ld a,0
         ld (hl),a
-        inc iyl                 ;get adjecent 8x8 cell
+                                       ;get adjecent 8x8 cell
         inc l
-        ld a,(iy)
-        ld (hl),a
-        inc iyl                ;get next byte
-        inc ixh                 ;get next row byte address
+        ld (hl),a                      
+        inc ixh                 
         call getPixelAddr
 	djnz ClearProjectile
 	
-        ret
-
-SaveProjectileBackground:
-        push ix
-        push hl
-        ld iy, (PROJECTILEBUFF)
-        call SaveBackground
-        pop hl
-        pop ix 
-        ret     
+        ret  
 AshCollision:
         
       
@@ -486,38 +472,44 @@ AshCollision:
         ld iy,playPos_x
 
         sub (iy)
-        add a, 8
-        cp 8
+        add a, 15
+        cp 32
         jp c, ySame
         
         ret
 ySame:
          ld a,(currDptr+1)
          sub (iy+1)
-         add a,12
-         cp 12
+         add a,15
+         cp 32
          jp c, newgame
          ret
 newgame:
         di
         ld a, 0
         ld (in_level), a
-        ld d, 8
-        ld e, 72
-        ld (d1), de
-        ld d, 8
-        ld e, 176
-        ld (d2), de
-        ld a, 3
-        ld d, 8
-        ld e, 72
-        ld (d3), de
+        ld (DONUTSONSCREEN), a
+        ld (DCounter), a
+        ld (DonutCounter), a
+        ld (resetdonutf), a
+        ld a, 1
+        ld (dTimer), a
+       
+        ld de, d1
+        ld hl, dinit2
+        call UnRollLDIR
+        ld de, d2
+        ld hl, dinit
+        call UnRollLDIR
+        ld de, d3
+        ld hl, dinit2
+        call UnRollLDIR
+        ld de, d4
+        ld hl, dinit
+        call UnRollLDIR
+        
         jp title
 
-scene2movement
-        call MovementLoop
-        jr scene2movement
-      
 
 DONUTSONSCREEN defb 0
 
@@ -526,7 +518,7 @@ d1Dir defb 3, 1  ;current direction and previous direction
 d1hl  defb 0, 0
 
 
-d2    defb 176, 8
+d2    defb 174, 8
 d2Dir defb 3, 0
 d2hl  defb 0, 0
 
@@ -536,17 +528,10 @@ d3Dir defb  3, 1
 d3hl  defb  0, 0
 
 
-d4    defb 176, 8
+d4    defb 174, 8
 d4Dir defb 3, 0
 d4hl  defb 0, 0
 
-d5    defb 72, 8
-d5Dir defb 3, 1
-d5hl  defb 0, 0
-
-d6    defb 176, 8
-d6Dir defb 3, 0
-d6hl  defb 0, 0
 
 currDptr defb 0, 0
 cDir     defb 0, 0
@@ -563,7 +548,6 @@ dinit2hl  defb 0, 0
 ptrAddr defw 0
 
 dTimer defb 1
-PROJECTILEBUFF defw 0
 DCounter defb 0
 DonutCounter defb 0
 resetdonutf defb 0
