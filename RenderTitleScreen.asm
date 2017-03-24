@@ -38,11 +38,11 @@ RenderTitleScreen
    ld de, Door1
    call DrawDoor
 
-   ld ixl,24
-   ld ixh,8
+   ld ixl, 24	    ;Location of Snorlax Title
+   ld ixh, 0
    call getPixelAddr
-   ld b,88           ;draw title screen
-   ld de , title_name
+   ld b, 112 
+   ld de, snorlax_title
    call DrawLogo
    ret
 
@@ -66,7 +66,7 @@ NextAdj:
 DrawLogo:
 
     push bc
-    ld b, 27
+    ld b, 26
 
 NextAdj2:
    
