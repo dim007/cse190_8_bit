@@ -4,18 +4,11 @@ START
         call SetInterrupt              ;Set up interrupt
         di
 title	
+      
         call RestartPosition
         call RenderTitleScreen        
 main	
-        
-	ld ix,(firArrow)
-        ld a, ixl
-        ld (oldArrowx),a
-        ld a, ixh
-        ld (oldArrowy),a
 
-        call DrawArrow
-	;normal main
         call RestartPosition           ;load initial player position
 
 	call getPixelAddr
@@ -60,14 +53,13 @@ DrawNextCell
 mainloop:
         
         call MovementLoop
-        push ix
-        call LevelSelect
-        pop ix
-        ;check for level selected
-        ld bc, 49150
-        in a, (c)
-        rra                      ;was "enter" pressed
-        call nc, EnterLevel
+      
+        ld a, 255
+        ld iy,playPos_x
+
+        sub (iy)
+        cp 10
+        jp c, LEVEL1
       
         jp mainloop
 
@@ -114,24 +106,6 @@ jh:
         ld (JUMPHELD), a
         ret
 
-LevelSelect:
-        ld a,ixl
-        cp 33
-        jp z,ARROW1
-
-        ld a,ixl
-        cp 90
-        jp z,ARROW2
-       
-        ld a,ixl
-        cp 156
-        jp z,ARROW3
-   
-        ld a,ixl
-        cp 219
-        jp z,ARROW4
-       
-        ret
 RestartPosition:
 
         ld a,0
@@ -139,66 +113,8 @@ RestartPosition:
         ld a,159
         ld (playPos_y), a
         ret
-EnterLevel
-
-        ld a,0
-        ld (playPos_x), a
-        ld a,159
-        ld (playPos_y), a
-        ld a,1
-        ld (FACINGRIGHT),a
-        di
-        ld a,(level_selected)
-        cp 1
-        jp z, LEVEL1
-        
-     
-        cp 2
-        jp z, LEVEL2
-    
-     
-        cp 3
-        jp z, LEVEL1
-
-     
-        cp 4
-        jp z, LEVEL1
 
 INCLUDE level1.asm
-        
-ARROW1:
-        ld ix,(firArrow)
-        ld a, 1
-        ld (level_selected), a
-        call DrawArrow
-        ret       
-        
-ARROW2:
-        ld ix,(secArrow)
-        ld a, 2
-        ld (level_selected), a
-        call DrawArrow
-   
-        ret
-ARROW3: 
-        ld ix,(thrdArrow)
-        ld a, 3
-        ld (level_selected), a
-        call DrawArrow
-       
-        ret
-ARROW4:
-        ld ix,(frthArrow)
-        ld a, 4
-        ld (level_selected), a
-        call DrawArrow
-       
-        ret
-
-        
-gameover
-
-	ret; 
 
 INCLUDE movementR2.asm
 INCLUDE render.asm     
@@ -207,8 +123,14 @@ INCLUDE "title.asm"
 INCLUDE RenderTitleScreen.asm
 INCLUDE lvl1.asm 
 INCLUDE InterruptHandler.asm
+INCLUDE gameover.asm
+INCLUDE RenderGameover.asm
+INCLUDE credits.asm
 
-
+press_start
+	DEFB	22,18,1,"Press Space To Jump"	
+	defb 	13			;new line
+eostr equ $	
 platform
         DEFB	255,255,129,129,255,129,129,129
 	DEFB	 56

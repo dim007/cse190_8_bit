@@ -63,6 +63,9 @@ CAP:
         ld a, (DONUTSONSCREEN)
         cp 4
         call nz, SetUpDonuts           ;If cp has not been reached, make new donut
+        ld a, (DONUTSONSCREEN)
+        cp 4
+        call nz, SetUpDonuts
         ret 
    
 MoveOneDonut:

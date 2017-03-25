@@ -1,20 +1,31 @@
 LEVEL1:
        call ClearScreen 
        ;Draw first level platforms
-       ld b, 10                       ;ten squares to draw
+       ld b, 12                     ;ten squares to draw
        ld ix, firstLPlats             ;location of frist level platforms
        call DrawPlatforms
+       ld a, 1
+       ld (tracklevel), a
        jp contsetup
 
 LEVEL2:
        call ClearScreen
        ;Draw first level platforms
-       ld b, 7                         ;ten squares to draw
+       ld b, 7                       ;ten squares to draw
        ld ix, secondLPlats             ;location of frist level platforms
-       call DrawPlatforms   
+       call DrawPlatforms 
+       ld a, 2
+       ld (tracklevel), a  
        jp contsetup  
 LEVEL3:
-     
+       call ClearScreen
+       ;Draw first level platforms
+       ld b, 13                      ;ten squares to draw
+       ld ix, thirdLPlats             ;location of frist level platforms
+       call DrawPlatforms   
+       ld a, 3
+       ld (tracklevel), a 
+       jp contsetup 
 ClearScreen: 
   
         di
@@ -27,12 +38,15 @@ contsetup:
         ld (23677), bc
         call 8933  
 
+      
+      
         ld b, 0                        ;delta y
         ld c, 255                      ;delta x
         ld d, 0                        ;sign of y
         ld e, 1                        ;sign of x
         call 9402
 
+        call s1
         call RestartPosition
         
         call getPixelAddr
@@ -53,7 +67,7 @@ contsetup:
         
 DrawSnorlax:
         push bc
-        ld b,8
+        ld b,7
 adjC    
         ld a, (de)
         or (hl)
@@ -129,36 +143,10 @@ adjF
       
         ret
    
-AnimateSnorlax:
-        
-        ld b, 48
-        
-        ld ixl,96
-        ld ixh,0
-        call getPixelAddr
-        push de
-        push ix
-        push hl
-        push bc
-        call ClearSnorlax
-        pop bc
-        pop hl
-        pop ix
-        pop de
-        push de
-        push ix
-        push hl
-        push bc
-        call DrawSnorlax
-        pop bc
-        pop hl
-        pop ix
-        pop de  
-        ret 
 
 ClearSnorlax:
         push bc
-        ld b,8
+        ld b,7
 adjG    
         xor a
         ld (hl), a
@@ -192,13 +180,16 @@ UpdateDonutPointer:
 endTrans:  
         ret
 UnRollLDIR:                            ;Fster than using ldir
+
         ldi
         ldi
         ldi
         ldi
         ldi
         ldi
+        
         ret
+
 Projectile1:
 
 
@@ -238,7 +229,7 @@ SetUpDonuts:
         inc a
         ld a, (DonutCounter)
       
-        ld a,100             
+        ld a,100    
         ld (dTimer), a
         ld a, (DONUTSONSCREEN)
 
@@ -276,15 +267,18 @@ iterateD:
         ret  
 DonutShiftDownPixels:
         inc ixh 
-        ;inc ixh
+        inc ixh
         ret
 DonutShiftLeftPixels:
+        dec ixl
+        dec ixl
         dec ixl
         dec ixl
        
         ret
 DonutShiftRightPixels:
-        
+        inc ixl
+        inc ixl
         inc ixl
         inc ixl
         ret 
@@ -355,13 +349,13 @@ ShiftLogic:
         ret 
 RightDetection:
         ld a,ixl
-        cp 238
-        jr z, DownObDet
+        cp 236
+        jp z, DownObDet
         ret 
 LeftDetection:
         ld a,ixl
-        cp 2
-        jr z, DownObDet
+        cp 4
+        jp z, DownObDet
         ret 
 OpeningDetection:
         push ix
@@ -409,31 +403,58 @@ DownDetection:
 resetdonut:                            ;reset current donut
         ld a, 1
         ld (resetdonutf), a
-        ld a, (cDir + 1)
+        ld a, (resTrack)
         cp 1
         jr z, fCh
   
-        ld de, (ptrAddr)
-        ld hl, dinit2
-        call UnRollLDIR
-        ret
         
-fCh
-        ld a, (cDir + 1)
-        cp 1
-        jp resD1
- 
-        ld de, (ptrAddr)
-        ld hl, dinit2
-        call UnRollLDIR
-      
-        ret
-resD1:  
+        xor 1
+        ld (resTrack), a
         ld de, (ptrAddr)
         ld hl, dinit
         call UnRollLDIR
+        call s2
         ret
-  
+        
+fCh
+        
+        xor 1
+        ld (resTrack), a
+        ld de, (ptrAddr)
+        ld hl, dinit2
+        call UnRollLDIR
+        call s1
+      
+        ret
+endDetection:
+        ld a, 106
+        ld iy,playPos_x
+
+        sub (iy)
+        add a, 15
+        cp 32
+        jp c, ys
+        
+        ret
+ys:
+         ld a, 0
+         sub (iy+1)
+         add a,15
+         cp 32
+         jp c, nextlevel
+         ret
+       
+nextlevel:
+         pop bc
+         call newgame
+         ld a, (tracklevel)
+         cp 1
+         call z, LEVEL2
+         cp 2
+         call z, LEVEL3
+         cp 3
+         call z, CREDITS
+         ret 
 DownObDet:
 
         ld a,(cDir + 1)
@@ -463,11 +484,13 @@ ClearProjectile
         inc ixh                 
         call getPixelAddr
 	djnz ClearProjectile
-	
+
         ret  
 AshCollision:
         
-      
+        ld a, (JUMPHELD)
+        cp 1
+        ret z
         ld a, (currDptr)
         ld iy,playPos_x
 
@@ -482,8 +505,15 @@ ySame:
          sub (iy+1)
          add a,15
          cp 32
-         jp c, newgame
+         jp c, lostgame
          ret
+lostgame:
+        di
+        ld a, 0
+        ld (in_level), a
+        call RenderGameover
+        call newgame
+        jp title
 newgame:
         di
         ld a, 0
@@ -494,7 +524,8 @@ newgame:
         ld (resetdonutf), a
         ld a, 1
         ld (dTimer), a
-       
+        ld (level_selected), a
+               
         ld de, d1
         ld hl, dinit2
         call UnRollLDIR
@@ -508,8 +539,44 @@ newgame:
         ld hl, dinit
         call UnRollLDIR
         
-        jp title
+        ret
+s1:
+        push ix
+        ld ixl,96
+        ld ixh,0
+        ld b, 48
 
+        push ix
+        push bc
+        call getPixelAddr
+        call ClearSnorlax
+        pop bc
+        pop ix
+    
+        ld de, snorlax
+        call getPixelAddr
+        call DrawSnorlax
+        pop ix
+        ret
+s2:
+        push ix
+        ld ixl,96
+        ld ixh,0
+        ld b, 48
+
+        push ix
+        push bc
+        call getPixelAddr
+        call ClearSnorlax
+        pop bc
+        pop ix
+    
+        ld de, snorlaxInv
+        call getPixelAddr
+        call DrawSnorlax
+        pop ix
+        
+        ret
 
 DONUTSONSCREEN defb 0
 
@@ -518,7 +585,7 @@ d1Dir defb 3, 1  ;current direction and previous direction
 d1hl  defb 0, 0
 
 
-d2    defb 174, 8
+d2    defb 172, 8
 d2Dir defb 3, 0
 d2hl  defb 0, 0
 
@@ -527,8 +594,7 @@ d3    defb  72, 8
 d3Dir defb  3, 1
 d3hl  defb  0, 0
 
-
-d4    defb 174, 8
+d4    defb 172, 8
 d4Dir defb 3, 0
 d4hl  defb 0, 0
 
@@ -537,7 +603,8 @@ currDptr defb 0, 0
 cDir     defb 0, 0
 chl      defb 0, 0
 
-dinit    defb 176, 8
+
+dinit    defb 172, 8
 dinitDir defb 3, 0
 dinithl  defb 0, 0
 
@@ -546,9 +613,10 @@ dinit2Dir defb 3, 1
 dinit2hl  defb 0, 0
 
 ptrAddr defw 0
-
+resTrack defb 1
 dTimer defb 1
 DCounter defb 0
 DonutCounter defb 0
 resetdonutf defb 0
+tracklevel defb 0
      

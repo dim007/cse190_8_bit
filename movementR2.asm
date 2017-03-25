@@ -29,9 +29,12 @@ UpdatePlayerPosition:
 MoveRight:
 
         push ix                        ;Check for collision
-        ld a, ixl 
-        cp 240
-        jp z, Collision
+        ld a, 255
+        ld iy,playPos_x
+
+        sub (iy)
+        cp 10
+        jp c, Collision
         pop ix
 
         ld a, (JUMPHELD)
@@ -56,13 +59,17 @@ MoveRight:
         ld (FACINGRIGHT), a
         
         call UpdatePlayerPosition
+        call endDetection
         pop af
         ret
 MoveLeft
         push ix                        ;Check for Collision
-        ld a, ixl
-        cp 0
-        jp z, Collision
+        ld a, (playPos_x)
+        ld b,3
+
+        sub b
+        cp 3
+        jp c, Collision
         pop ix
 
         ld a, (JUMPHELD)               ;was jump button held?
@@ -87,6 +94,7 @@ MoveLeft
         ld (FACINGRIGHT), a
 
         call UpdatePlayerPosition      ;update player position
+        call endDetection
         pop af
         ret
 Jump:
@@ -147,6 +155,7 @@ cont:
 CheckForPlatformRAhead:                ;is jumping to the right
        push ix
        inc ixl
+       inc ixl
        call CheckForPlatform
        pop ix
        ret  
@@ -188,7 +197,7 @@ UpArc
 
        call ClearMe                    ;Clear Screen
        ld a, ixl
-       add a, 16                      ;move right 16 pixels
+       add a, 21                     ;move right 21 pixels
        ld ixl, a
        ld a, ixh                       ;move up 24 pixels
        sub 24
@@ -207,8 +216,8 @@ UpArc
 DownArc 
        call CheckForPlatformRAhead     ;check for platforms below, draw on platofrm if found
        call ClearMe                    ;Clear Screen
-       ld a, ixl                       ;move right 16 pixels
-       add a, 16                       ;move up 24 pixels
+       ld a, ixl                       ;move right 21 pixels
+       add a, 21                       ;move up 24 pixels
        ld ixl, a
        ld a, ixh
        add a, b                        ;b was the value returned from checkforplatform subroutine
@@ -233,7 +242,7 @@ UpArc2
 
        call ClearMe                    ;Clear Screen
        ld a, ixl
-       sub 16
+       sub 21
        ld ixl, a                       ;move left 16 pixels
        ld a, ixh                       ;move up 24 pixels
        sub 24
@@ -253,7 +262,7 @@ DownArc2
        call CheckForPlatformLAhead
        call ClearMe                    ;Clear Screen
        ld a, ixl
-       sub 16
+       sub 21
        ld ixl, a                       ;move left 16 pixels
        ld a, ixh                       ;move down 24 pixels
        add a, b                        ;b was the value returned from checkforplatform subroutine
@@ -271,23 +280,6 @@ DownArc2
        ld (JUMPHELD), a 
        pop af
        ret
-
-MoveDown:
-   
-        
-        ld de, ash1                    ;animate first frame
-        call AnimateFrame
-      
-        ld a, 1
-        ld (FACINGRIGHT), a
-
-        ld a, ixl
-        ld (playPos_x), a
-        ld a,ixh
-        ld (playPos_y), a              ;get new y position
-        
-        ret
-
 ;Our main drawing routine
 ;Input: ix reg holds the player address
 ;Output: modifies ix and hl registers

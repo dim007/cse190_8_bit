@@ -49,7 +49,7 @@ gameoverloop:
   ld bc, 49150
   in a, (c)
   rra
-  call nc, title
+  ret nc
 
 
   ld a, (SLEEP)
