@@ -54,7 +54,7 @@ STOREBACKGROUND
 	ld ixh,a
         ld a, (playPos_x)       ; x position
 	ld ixl,a
-        ld b, 16
+        ld b, 8
         ld de, ash1_r
 
 DrawSprite

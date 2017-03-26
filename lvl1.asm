@@ -48,7 +48,7 @@ defb 1, -1
 
 
 ;------------------------------------------------------------------
-defb 41, 168     ;plot point
+defb 41, 162     ;plot point
 
 defb 2, 0       ;deltas to point 2 (y,x)
 defb -1, 1      ;signs
@@ -91,7 +91,7 @@ defb 1, 0
 defb 0, 28
 defb 1, -1
 ;------------------------------------------------------------------------
-defb 69, 200   ;plot point
+defb 65, 200   ;plot point
 
 defb 2, 0       ;deltas to point 2 (y,x)
 defb -1, 1      ;sigd
@@ -106,7 +106,7 @@ defb 1, 0
 defb 0, 55
 defb 1, -1
 ;------------------------------------------------------------------------
-defb 73, 45   ;plot point
+defb 73, 35  ;plot point
 
 defb 2, 0       ;deltas to point 2 (y,x)
 defb -1, 1      ;sigd
@@ -359,18 +359,7 @@ defb 1, 0
 defb 0, 32
 defb 1, -1
 ;----------------------------------------------------------------------
-defb 97, 150  ;plot point
-defb 2, 0       ;deltas to point 2 (y,x)
-defb -1, 1      ;signs
 
-defb 0, 32    ;deltas to point 3 a
-defb 1, 1       ;signs
-
-defb 2, 0   
-defb 1, 0
-
-defb 0, 32
-defb 1, -1
 
 ;------------------------------------------------------------------
 defb 77, 32    ;plot point

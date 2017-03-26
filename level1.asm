@@ -20,7 +20,7 @@ LEVEL2:
 LEVEL3:
        call ClearScreen
        ;Draw first level platforms
-       ld b, 13                      ;ten squares to draw
+       ld b, 12                     ;ten squares to draw
        ld ix, thirdLPlats             ;location of frist level platforms
        call DrawPlatforms   
        ld a, 3
@@ -426,23 +426,8 @@ fCh
         call s1
       
         ret
-endDetection:
-        ld a, 106
-        ld iy,playPos_x
 
-        sub (iy)
-        add a, 15
-        cp 32
-        jp c, ys
-        
-        ret
-ys:
-         ld a, 0
-         sub (iy+1)
-         add a,15
-         cp 32
-         jp c, nextlevel
-         ret
+
        
 nextlevel:
          pop bc
@@ -507,7 +492,11 @@ ySame:
          cp 32
          jp c, lostgame
          ret
+falllost:
+         ld b, 60
+         call grav
 lostgame:
+        
         di
         ld a, 0
         ld (in_level), a
@@ -517,7 +506,8 @@ lostgame:
 newgame:
         di
         ld a, 0
-        ld (in_level), a
+        ld (in_level), a 
+        ld (ded), a
         ld (DONUTSONSCREEN), a
         ld (DCounter), a
         ld (DonutCounter), a

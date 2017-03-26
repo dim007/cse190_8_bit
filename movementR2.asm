@@ -54,7 +54,15 @@ MoveRight:
         call ShiftRPixels
         call AnimateFrame              ;third frame
         halt
-        
+       
+        ld de, ash1_r
+        call CheckForPlatformRAhead
+        call grav
+
+        ld a, (ded)
+        cp 1
+        jp z, falllost
+
         ld a, 1
         ld (FACINGRIGHT), a
         
@@ -89,6 +97,14 @@ MoveLeft
         call ShiftLPixels
         call AnimateFrame
         halt
+     
+        ld de, ash1
+        call CheckForPlatformLAhead
+        call grav
+
+        ld a, (ded)
+        cp 1
+        jp z, falllost
 
         ld a, 0
         ld (FACINGRIGHT), a
@@ -97,6 +113,24 @@ MoveLeft
         call endDetection
         pop af
         ret
+
+endDetection:
+        ld a, 150
+        ld iy,playPos_x
+
+        sub (iy)
+        add a, 25
+        cp 50
+        jp c, ys
+        
+        ret
+ys:
+         ld a, 32
+         sub (iy+1)
+         add a,15
+         cp 32
+         jp c, nextlevel
+         ret
 Jump:
         
         
@@ -107,13 +141,19 @@ Jump:
         jp JumpL                       ;in a straight vertical direction
          
 JumpR: ld de,ash3_r
+       call UpLoop
+       call CheckForPlatformRAhead
        jp VertUp
-JumpL: ld de, ash3                     ;Character is facing left
+JumpL: ld de, ash3  
+       call UpLoop                   ;Character is facing left
+       call CheckForPlatformLAhead
        jp VertUp
 VertUp:                                ;Simple Vertical Jump                              
-       
-        call UpLoop
-        call DownLoop   
+     
+        call DownLoop  
+        ld a, (ded)
+        cp 1
+        jp z, falllost 
         call UpdatePlayerPosition
         ld a, 0
         ld (JUMPHELD), a 
@@ -134,9 +174,14 @@ UpLoop:
 DownLoop:   
        
                                        ;going down 2 pixels for 12 iterations
-        call CheckForPlatform          ;check if there's any platforms before falling
+                 ;check if there's any platforms before falling
+        ld a, (ded)
+        cp 1
+        jp z, falllost
                                        ;if so, fall till platform is reached
-        
+grav    ld a, b
+        cp 0
+        ret z
 DLoop:  
         
 cont:
@@ -152,23 +197,46 @@ cont:
         djnz DLoop
                                       
         ret 
-CheckForPlatformRAhead:                ;is jumping to the right
+CheckForPlatformRAhead:                ;standing on edge of platform facing right
        push ix
-       inc ixl
-       inc ixl
+       ld a, ixl
+       sub 3
+       ld ixl, a
        call CheckForPlatform
        pop ix
        ret  
-CheckForPlatformLAhead:                ;is jumping to the left
+CheckForPlatformLAhead:                ;facing left
        push ix
-       dec ixl
+       ld a, ixl
+       add a, 8
+       ld ixl, a
        call CheckForPlatform
        pop ix
        ret  
-      
+CheckForPlatformJRAhead:                ;is jumping to the right
+       push ix
+       ld a, ixl
+       add a, 14
+       ld ixl, a
+       call CheckForPlatform
+       pop ix
+       ret  
+CheckForPlatformJLAhead:                ;is jumping to the left
+       push ix
+       ld a, ixl
+       sub 8
+       ld ixl, a
+       call CheckForPlatform
+       pop ix
+       ret  
+falldeath:
+       ld a, 1
+       ld (ded) ,a
+       ret     
 CheckForPlatform:
        push ix
-       ld b, 15                       ;look at the 15 pixels below ash's feet
+       push de
+       ld b, 48                       ;look at the 15 pixels below ash's feet
        ld a, ixh
        add a, 16
        ld ixh, a
@@ -176,16 +244,18 @@ checkLoop:
        
        call getPixelAddr               ;get screen address
        ld a,(hl)
-       cp 255                            ;check for platform
-       jr z, StopJump 
+       cp 0                            ;check for platform
+       jr nz, StopJump 
        inc ixh
        djnz checkLoop
+       pop de
        pop ix
-       ld b, 24                      ;Fall for full 24 pixels
+       call falldeath                         ;Fall for full 24 pixels
        ret
 StopJump:
+       pop de
        pop ix                          ;Fall to Platform
-       ld a, 16                        ;iterations it took to find platform
+       ld a, 48                        ;iterations it took to find platform
        sub b
        ld b, a    
        ret
@@ -197,7 +267,7 @@ UpArc
 
        call ClearMe                    ;Clear Screen
        ld a, ixl
-       add a, 21                     ;move right 21 pixels
+       add a, 16                    ;move right 21 pixels
        ld ixl, a
        ld a, ixh                       ;move up 24 pixels
        sub 24
@@ -214,10 +284,14 @@ UpArc
        ld bc, 20
 
 DownArc 
-       call CheckForPlatformRAhead     ;check for platforms below, draw on platofrm if found
+       call CheckForPlatformJRAhead           ;check for platforms below, draw on platofrm if found
        call ClearMe                    ;Clear Screen
+       ld de, ash3_r
+       ld a, (ded)
+       cp 1
+       jp z, falllost 
        ld a, ixl                       ;move right 21 pixels
-       add a, 21                       ;move up 24 pixels
+       add a, 16                       ;move up 24 pixels
        ld ixl, a
        ld a, ixh
        add a, b                        ;b was the value returned from checkforplatform subroutine
@@ -241,8 +315,9 @@ JumpForwardL:                          ;player has jumped forward in the left di
 UpArc2
 
        call ClearMe                    ;Clear Screen
+       
        ld a, ixl
-       sub 21
+       sub 16
        ld ixl, a                       ;move left 16 pixels
        ld a, ixh                       ;move up 24 pixels
        sub 24
@@ -259,10 +334,14 @@ UpArc2
        ld bc, 20
 
 DownArc2 
-       call CheckForPlatformLAhead
-       call ClearMe                    ;Clear Screen
+       call CheckForPlatformJLAhead
+       call ClearMe  
+       ld de, ash3                   ;Clear Screen
+        ld a, (ded)
+        cp 1
+        jp z, falllost 
        ld a, ixl
-       sub 21
+       sub 16
        ld ixl, a                       ;move left 16 pixels
        ld a, ixh                       ;move down 24 pixels
        add a, b                        ;b was the value returned from checkforplatform subroutine
@@ -336,67 +415,32 @@ Collision
         pop af
         ret
 Shift
-
-        ld a ,(INFOREGROUND)
-        cp 1
-        jp z, MaskShift
-      
-   
-        ld a,(de)                      ;load first byte
-        or (hl)
-        ld (hl),a                      ;write to screen mem
-        inc de  
-        inc de                         ;get next byte 
-        inc hl                         ;get adjecent 8x8 cell
-        ld a,(de)                      ;load adj cell
-        or (hl)
-        ld (hl),a
-        inc de                         ;get next byte
-        inc de
-        inc ixh                        ;get next row byte address
+        push ix
+        push hl
+        push de
+        ld b, 8
+ShiftLoop:
+        push bc
+        ex de, hl
+        ldi
+        ldi
+        inc ixh       
+        ex de, hl                 ;get next row byte address
         call getPixelAddr
-        djnz Shift
+        ex de, hl
+        ldi
+        ldi
+        inc ixh
+        ex de, hl
+        call getPixelAddr
+        pop bc
+        djnz ShiftLoop
 	ld a,(playPos_y)
         ld ixh,a
+        pop de
+        pop hl
+        pop ix
         ret
-
-MaskShift
-      
-
-        push de
-        inc de
-        ld a,(de)                      ;load first mask byte
-        and (hl)
-        ld (hl),a                      ;mask in
-        pop de
-        ld a,(de)                      ;load first graph byte
-        or (hl)
-        ld (hl),a                      ;draw char
-        inc hl
-        inc de                         ;get next graph byte 
-        inc de
-        push de
-        inc de
-        ld a,(de)                      ;load second mask byte
-        and (hl)
-        ld (hl),a                      ;mask in
-        pop de
-        ld a,(de)                      ;load second graph byte
-        or (hl)
-        ld (hl),a                      ;draw char
-     
-
-        inc de                         ;get next graph byte 
-        inc de
-   
-        inc hl
-        inc ixh                        ;get next row byte address
-        call getPixelAddr
-        djnz Shift
-	ld a,(playPos_y)
-        ld ixh,a
-        
-        ret 
 
 ; input - screen address and ix coordinate
 SaveBackground

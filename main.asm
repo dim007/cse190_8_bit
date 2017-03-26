@@ -92,16 +92,20 @@ MovementLoop
         pop af
 
        
+        halt
+        halt
 	;check for jump movement
         ld a, (JUMPHELD)
         cp 1
         jp z, Jump
-
+    
         ld a, 0
         ld (JUMPHELD), a
 	
 	ret
 jh:
+        halt
+        halt
         ld a, 1
         ld (JUMPHELD), a
         ret
@@ -127,12 +131,9 @@ INCLUDE gameover.asm
 INCLUDE RenderGameover.asm
 INCLUDE credits.asm
 
-press_start
-	DEFB	22,18,1,"Press Space To Jump"	
-	defb 	13			;new line
-eostr equ $	
 platform
         DEFB	255,255,129,129,255,129,129,129
 	DEFB	 56
 level_selected DEFB 0
 in_level defb 0
+ded defb 0
